@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="author" content="IT Canarias">
+<meta name="copyright" content="© 2026 IT Canarias. Todos los derechos reservados.">
+<meta name="theme-color" content="#3a141b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Damas">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<title>Damas</title>
+<style>
+:root{
+  --bg:#22090e; --felt:#3a141b; --card:#4a1a23; --card2:#5c222d; --line:#7a2f3c;
+  --txt:#f7ece4; --mut:#d0aeb0; --gold:#f0c060; --red:#ff6b6b; --blue:#6cc4e8; --ok:#62d39a;
+  --r:14px; --on-gold:#2a1a00; --on-blue:#062a33; --outbg:#262a33;
+  --sql:#ecd7b0; --sqd:#b08559;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;overflow-x:hidden;background:var(--bg);color:var(--txt);font:calc(16px * var(--fs, 1))/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{min-height:100vh;padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:5;background:var(--felt);border-bottom:1px solid var(--line);
+  padding:calc(10px + env(safe-area-inset-top)) 14px 10px;display:flex;align-items:center;gap:10px}
+header h1{font-size:calc(19px * var(--fs, 1));margin:0;flex:1;letter-spacing:.3px;min-width:0}
+header h1 small{display:block;font-size:calc(12px * var(--fs, 1));color:var(--mut);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+main{padding:14px;max-width:720px;margin:0 auto}
+button{font:inherit;color:inherit;border:0;border-radius:12px;padding:12px 16px;background:var(--card2);cursor:pointer}
+button:active{transform:scale(.97)}
+button[disabled]{opacity:.4}
+.btn-gold{background:var(--gold);color:var(--on-gold);font-weight:700}
+.btn-red{background:var(--red);color:#fff;font-weight:600}
+.btn-ghost{background:transparent;border:1px solid var(--line)}
+.icon{position:relative;width:42px;height:42px;padding:0;display:grid;place-items:center;font-size:calc(20px * var(--fs, 1));background:transparent}
+.sec{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.sec h2{font-size:calc(15px * var(--fs, 1));margin:0 0 10px;color:var(--gold);text-transform:uppercase;letter-spacing:.6px}
+label.f{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+label.f:first-of-type{border-top:0}
+label.f span{flex:1;min-width:0}
+label.f em{display:block;font-style:normal;font-size:calc(12px * var(--fs, 1));color:var(--mut)}
+input,select{font:inherit;color:var(--txt);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+input[type=number]{width:90px;text-align:center}
+input:focus,select:focus{outline:2px solid var(--gold);outline-offset:0}
+input.tg{appearance:none;-webkit-appearance:none;width:52px;height:30px;border-radius:999px;background:var(--bg);border:1px solid var(--line);position:relative;flex:none;padding:0;cursor:pointer;transition:background .15s}
+input.tg::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--mut);transition:transform .15s,background .15s}
+input.tg:checked{background:var(--gold);border-color:var(--gold)}
+input.tg:checked::after{transform:translateX(22px);background:var(--on-gold)}
+.plist .pr{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.plist .pr input{flex:1;min-width:0}
+.plist .pr button{padding:10px 12px}
+.side svg{width:34px;height:34px;display:block}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.mut{color:var(--mut);font-size:calc(13px * var(--fs, 1))}
+.fab{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));max-width:692px;margin:0 auto;
+  padding:16px;font-size:calc(18px * var(--fs, 1));box-shadow:0 6px 20px rgba(0,0,0,.4);z-index:6}
+
+/* Tablas */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);background:var(--card)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:calc(14px * var(--fs, 1))}
+th,td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+th{position:sticky;top:0;background:var(--card2);font-size:calc(13px * var(--fs, 1));max-width:90px;overflow:hidden;text-overflow:ellipsis}
+td:first-child,th:first-child{text-align:left;padding-left:10px;color:var(--mut);position:sticky;left:0;background:var(--card)}
+th:first-child{background:var(--card2)}
+
+/* Ventanas */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.modal.hidden{display:none}
+.sheet{background:var(--felt);width:100%;max-width:720px;max-height:92vh;overflow-y:auto;overflow-x:hidden;border-radius:20px 20px 0 0;
+  padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.sheet h3{margin:0 0 4px;font-size:calc(20px * var(--fs, 1))}
+.sheet .sub{color:var(--mut);font-size:calc(13px * var(--fs, 1));margin-bottom:12px}
+.hrow{background:var(--card);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.hrow .top{display:flex;align-items:center;gap:10px}
+.hrow .top .n{flex:1;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow .top .n small{display:block;font-weight:400;color:var(--mut);font-size:calc(12px * var(--fs, 1))}
+.closebtn{padding:8px 10px;font-size:calc(13px * var(--fs, 1));background:transparent;border:1px solid var(--line);white-space:nowrap}
+.kinds{display:flex;gap:6px;margin-top:8px}
+.kinds button{flex:1;min-width:0;overflow-wrap:anywhere;padding:8px 6px;font-size:calc(13px * var(--fs, 1));background:var(--bg);border:1px solid var(--line)}
+.kinds button.on{background:var(--gold);color:var(--on-gold);font-weight:700;border-color:var(--gold)}
+.sheet .acts{display:flex;gap:10px;margin-top:14px}
+.sheet .acts button{flex:1;padding:14px}
+#toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#000c;color:#fff;padding:10px 16px;border-radius:999px;font-size:calc(14px * var(--fs, 1));opacity:0;transition:opacity .25s;pointer-events:none;z-index:30;max-width:90vw;text-align:center}
+#toast.on{opacity:1}
+.menu button{display:block;width:100%;text-align:left;margin-bottom:8px;background:var(--card)}
+.menu button.btn-gold{background:var(--gold);color:var(--on-gold)}
+.menu button.btn-red{background:var(--red);color:#fff}
+.donate{background:var(--card);border:1px solid var(--gold);border-radius:14px;padding:14px;margin-top:4px;text-align:center}
+.donate .dt{font-weight:800;font-size:calc(17px * var(--fs, 1));color:var(--gold)}
+.donate .dd{color:var(--mut);font-size:calc(14px * var(--fs, 1));margin:6px 0 12px}
+.donate button{width:100%;padding:14px;font-size:calc(16px * var(--fs, 1))}
+.copy{text-align:center;color:var(--mut);font-size:calc(12px * var(--fs, 1));padding:8px 0 4px;opacity:.8}
+.themes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:6px 0 4px}
+.th{padding:0;border-radius:14px;overflow:hidden;border:3px solid transparent;text-align:left;background:none}
+.th.on{border-color:var(--gold)}
+.th .pv{height:74px;padding:10px;display:flex;gap:6px;align-items:flex-end}
+.th .pv i{flex:1;height:38px;border-radius:8px;display:block}
+.th .pv b{width:26px;height:26px;border-radius:50%;display:block;flex:none}
+.th .tn{padding:8px 10px;font-weight:700;font-size:calc(14px * var(--fs, 1));display:flex;justify-content:space-between}
+.bthemes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:6px 0 10px}
+.bthemes button{padding:0;border-radius:10px;overflow:hidden;border:3px solid transparent;background:none}
+.bthemes button.on{border-color:var(--gold)}
+.bthemes .mini{display:grid;grid-template-columns:1fr 1fr;aspect-ratio:1}
+.bthemes span{display:block;font-size:calc(11px * var(--fs, 1));padding:3px 0;text-align:center;background:var(--card)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
+.chipb{padding:8px 14px;border-radius:999px;background:var(--bg);border:1px solid var(--line);font-size:calc(15px * var(--fs, 1))}
+.chipb.on{background:var(--gold);color:var(--on-gold);border-color:var(--gold);font-weight:700}
+#menuBtn.dot::after{content:'';position:absolute;top:6px;right:6px;width:11px;height:11px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px var(--felt)}
+#updBanner{display:none;background:var(--gold);color:var(--on-gold);font-weight:700;text-align:center;padding:10px 14px;cursor:pointer;font-size:calc(15px * var(--fs, 1))}
+#updBanner.on{display:block}
+.pf-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.pf-av{width:48px;height:48px;border-radius:50%;background:var(--gold);color:var(--on-gold);display:grid;place-items:center;font-weight:800;flex:none}
+.pf-rating{font-size:calc(30px * var(--fs, 1));font-weight:800;color:var(--gold);line-height:1}
+.pf-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.pf-kpi{background:var(--card);border-radius:12px;padding:10px 12px}
+.pf-kpi span{display:block;font-size:calc(12px * var(--fs, 1));color:var(--mut)}
+.pf-kpi b{font-size:calc(22px * var(--fs, 1))}
+.pf-kpi small,.pf-line small,.pf-t small{font-weight:400;color:var(--mut);font-size:calc(13px * var(--fs, 1))}
+.pf-t{font-weight:700;color:var(--gold);margin:6px 0 6px;font-size:calc(14px * var(--fs, 1))}
+.pf-box{background:var(--card);border-radius:12px;padding:6px 12px;margin-bottom:10px}
+.pf-line{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+.pf-line:first-child{border-top:0}
+.pf-h2h{display:flex;align-items:center;gap:10px;padding:6px 0}
+.pf-h2h span{width:30%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-h2h b{width:62px;text-align:right}
+.pf-bar{flex:1;height:10px;border-radius:5px;background:var(--red);overflow:hidden;opacity:.9;display:flex}
+.pf-bar i{display:block;height:100%;background:var(--ok)}
+.pf-bar u{display:block;height:100%;background:var(--mut)}
+.pf-months{display:flex;align-items:flex-end;gap:8px;height:110px;padding-top:6px}
+.pf-months div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:100%}
+.pf-months i{display:block;width:100%;background:var(--card2);border-radius:5px 5px 0 0}
+.pf-months small,.pf-months span{font-size:calc(11px * var(--fs, 1));color:var(--mut)}
+.empty{text-align:center;color:var(--mut);padding:20px}
+.rules h4{color:var(--gold);margin:14px 0 4px}
+.rules p,.rules li{color:var(--txt);line-height:1.5;margin:4px 0}
+.rules ul{padding-left:20px;margin:4px 0}
+
+/* Inicio */
+.modes{margin:0 0 14px}
+.modes button{padding:12px 4px;font-size:calc(14px * var(--fs, 1))}
+.colbtn{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 6px!important}
+.colbtn svg{width:26px;height:26px;flex:none}
+.levels{display:flex;flex-direction:column;gap:6px}
+.lvl{display:flex;align-items:center;gap:12px;text-align:left;background:var(--bg);border:1px solid var(--line);padding:10px 12px}
+.lvl b{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--card2);flex:none}
+.lvl span{flex:1;min-width:0;font-weight:700}
+.lvl em{display:block;font-style:normal;font-weight:400;color:var(--mut);font-size:calc(12px * var(--fs, 1))}
+.lvl small{color:var(--mut);font-size:calc(12px * var(--fs, 1))}
+.lvl.on{border-color:var(--gold);background:var(--card2)}
+.lvl.on b{background:var(--gold);color:var(--on-gold)}
+.res{display:inline-block;min-width:44px;text-align:center;padding:2px 6px;border-radius:6px;background:var(--card2);font-size:calc(12px * var(--fs, 1));font-weight:700;color:var(--txt)}
+.res.w{background:var(--ok);color:#06210f}.res.l{background:var(--red);color:#fff}
+
+/* Partida */
+body:has(.gm){padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+main:has(.gm){padding-top:8px}
+.gm{display:flex;flex-direction:column;gap:8px}
+.gb{width:100%;max-width:min(100%, calc(100svh - 270px));margin:0 auto;min-width:260px}
+.board{position:relative;width:100%;aspect-ratio:1;border-radius:6px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 4px 16px rgba(0,0,0,.35)}
+.sq{position:absolute;width:12.5%;height:12.5%}
+.sq.l{background:var(--sql)}.sq.d{background:var(--sqd)}
+.sq.last::before,.sq.sel::before,.sq.hint::before,.sq.best::before,.sq.chk::before{content:'';position:absolute;inset:0}
+.sq.last::before{background:rgba(255,215,40,.42)}
+.sq.sel::before{background:rgba(40,150,255,.45)}
+.sq.hint::before{background:rgba(70,210,120,.5);box-shadow:inset 0 0 0 3px rgba(20,120,60,.8)}
+.sq.best::before{background:rgba(60,150,255,.45);box-shadow:inset 0 0 0 3px rgba(20,80,180,.85)}
+.sq.chk::before{background:radial-gradient(circle,rgba(255,40,40,.95) 0,rgba(255,40,40,.55) 40%,rgba(255,40,40,0) 72%)}
+.sq.tgt::after{content:'';position:absolute;left:36%;top:36%;width:28%;height:28%;border-radius:50%;background:rgba(10,20,30,.28);z-index:4}
+.sq.tcap::after{content:'';position:absolute;inset:6%;border-radius:50%;box-shadow:inset 0 0 0 calc(var(--bw, 360px) * .01) rgba(255,70,70,.85);z-index:4}
+.sq b{position:absolute;font-size:calc(10px + .4vmin);font-weight:700;line-height:1;opacity:.85;pointer-events:none}
+.sq.l b{color:var(--sqd)}.sq.d b{color:var(--sql)}
+.sq .cn{left:3px;top:2px;opacity:.7;font-size:calc(8px + .3vmin)}
+.pc{position:absolute;width:12.5%;height:12.5%;pointer-events:none;z-index:2;will-change:transform}
+.pc svg{width:100%;height:100%;display:block;transform:scale(.86)}
+.pc.drag{z-index:6;transition:none!important}
+.pbar{display:flex;align-items:center;gap:8px;padding:6px 2px;min-height:44px}
+.pbar .pk svg{width:34px;height:34px;display:block}
+.pn{flex:1;min-width:0}
+.pn b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:calc(15px * var(--fs, 1))}
+.pbar.turn .pn b{color:var(--gold)}
+.caps{display:flex;align-items:center;height:18px;overflow:hidden}
+.caps:empty{display:none}
+.caps i svg{width:17px;height:17px;display:block}
+.caps i + em{margin-left:2px;margin-right:6px}
+.caps em{font-style:normal;font-size:calc(12px * var(--fs, 1));color:var(--mut);margin-left:10px;font-weight:700}
+.caps em.think{color:var(--blue);animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.35}}
+.clock{font-variant-numeric:tabular-nums;font-weight:800;font-size:calc(20px * var(--fs, 1));background:var(--card);padding:4px 10px;border-radius:8px;min-width:78px;text-align:center}
+.clock.run{background:var(--gold);color:var(--on-gold)}
+.clock.low{color:var(--red)}.clock.low.run{background:var(--red);color:#fff}
+.gs{min-width:0}
+.sidebars{display:none}
+.gstatus{display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;font-weight:700;padding:9px 10px;background:var(--card);border-radius:12px;min-height:44px}
+.gstatus button{padding:6px 12px;background:var(--blue);color:var(--on-blue);font-weight:700;flex:none}
+.gstatus.end{background:var(--gold);color:var(--on-gold)}
+.gstatus.bad{background:var(--red);color:#fff}
+.opening{color:var(--mut);font-size:calc(13px * var(--fs, 1));text-align:center;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.viewing{width:100%;margin-top:6px;padding:8px;background:var(--blue);color:var(--on-blue);font-weight:700}
+.moves{display:flex;align-items:center;gap:1px;overflow-x:auto;white-space:nowrap;padding:8px 2px;scrollbar-width:none;min-height:44px}
+.moves::-webkit-scrollbar{display:none}
+.mv{padding:5px 7px;background:transparent;border-radius:6px;font-size:calc(15px * var(--fs, 1));flex:none}
+.mv.on{background:var(--gold);color:var(--on-gold);font-weight:700}
+.mn{color:var(--mut);font-size:calc(13px * var(--fs, 1));padding:0 1px 0 6px;flex:none}
+.gacts{display:flex;gap:6px;flex-wrap:wrap}
+#gFlip{flex:0 0 48px}
+.gacts button{flex:1 1 auto;padding:12px 8px;min-width:0;font-size:calc(15px * var(--fs, 1))}
+.promo{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.promo button{display:flex;flex-direction:column;align-items:center;padding:8px;background:var(--card)}
+.promo svg{width:100%;max-width:72px;height:auto;background:var(--sql);border-radius:8px}
+.promo span{font-size:calc(13px * var(--fs, 1));margin-top:4px}
+pre.pgn{background:var(--bg);border-radius:10px;padding:10px;max-height:28vh;overflow:auto;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+/* Revisión y análisis */
+.rvhead{text-align:center;padding:4px 0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bwrap{display:flex;gap:6px;align-items:stretch}
+.bwrap .board{flex:1;min-width:0}
+.evbar{width:16px;flex:none;border-radius:4px;background:#2e2e30;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.evbar.flip{flex-direction:column-reverse}
+.evbar i{display:block;width:100%;background:#f3efe6;transition:height .3s}
+.evbar span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-90deg);font-size:10px;font-weight:800;color:#999;white-space:nowrap;mix-blend-mode:difference}
+.nav{display:flex;gap:6px;margin-top:8px}
+.nav button{flex:1;padding:12px 0;font-size:calc(18px * var(--fs, 1))}
+.note{background:var(--card);border-radius:12px;padding:10px 12px;min-height:3.2em;line-height:1.45}
+.linkb{background:none;padding:0 4px;color:var(--blue);text-decoration:underline;font-size:inherit}
+.anprog{position:relative;height:30px;border-radius:10px;background:var(--card);overflow:hidden;margin-top:8px}
+.anprog i{position:absolute;left:0;top:0;bottom:0;background:var(--blue);opacity:.45;transition:width .2s}
+.anprog span{position:relative;display:block;text-align:center;line-height:30px;font-weight:700;font-size:calc(14px * var(--fs, 1))}
+.sum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.sum div{background:var(--card);border-radius:12px;padding:8px 10px;min-width:0}
+.sum b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sum span{display:block;color:var(--gold);font-weight:800}
+.sum small{font-size:calc(12px * var(--fs, 1))}.sum i{font-style:normal;font-weight:700}
+.mlist{display:flex;flex-wrap:wrap;align-items:center;gap:1px;max-height:30vh;overflow-y:auto;background:var(--card);border-radius:12px;padding:6px;margin:8px 0}
+.mlist .mv sup{font-size:.7em;margin-left:1px}
+.c-best{color:var(--ok)}.c-inac{color:#e8c447}.c-err{color:#f39237}.c-blun{color:var(--red)}
+.mv.on.c-best,.mv.on.c-inac,.mv.on.c-err,.mv.on.c-blun{color:var(--on-gold)}
+.rv .gacts{margin-top:4px}
+/* Problemas */
+.pzbar{height:10px;border-radius:5px;background:var(--bg);overflow:hidden}
+.pzbar i{display:block;height:100%;background:var(--gold)}
+.pzgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.pzgrid button{padding:12px 0;background:var(--bg);border:2px solid var(--line);font-weight:700}
+.pzgrid button.ok{border-color:var(--gold);color:var(--gold)}
+.pzgrid button.ok1{background:var(--gold);border-color:var(--gold);color:var(--on-gold)}
+.daily{display:flex;align-items:center;gap:12px;width:100%;margin-top:12px;text-align:left;background:var(--bg);border:1px solid var(--gold)}
+.daily span{font-size:calc(24px * var(--fs, 1))}.daily b{flex:1}.daily small{display:block;font-weight:400;color:var(--mut);font-size:calc(12px * var(--fs, 1))}
+.daily em{font-style:normal;font-weight:800;color:var(--gold);font-size:calc(20px * var(--fs, 1))}.daily.done{border-color:var(--line)}
+.olbanner{background:var(--card);border-radius:12px;padding:12px;margin-bottom:8px;text-align:center}
+.olbanner.hidden{display:none}.olbanner.small{padding:8px 10px;font-size:calc(14px * var(--fs, 1))}
+.olbanner .olcode{display:block;font-size:calc(44px * var(--fs, 1));letter-spacing:10px;color:var(--gold);margin:4px 0 10px}
+.olbanner button{width:100%}.olbanner .gacts{margin-top:8px}.olbanner.draw{border:2px solid var(--gold)}
+.pzhead{display:flex;align-items:center;gap:10px;padding:4px 2px 8px}
+.pzhead .pk svg{width:34px;height:34px;display:block}
+.pzhead b{display:block}
+/* Editor */
+.palette{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.palette button{padding:2px;background:var(--card);border:2px solid transparent;aspect-ratio:1;display:grid;place-items:center;font-size:calc(20px * var(--fs, 1))}
+.palette button svg{width:100%;height:100%}
+.palette button.on{border-color:var(--gold);background:var(--card2)}
+.palette .erase{grid-column:7;grid-row:1 / span 2;aspect-ratio:auto}
+#edBoard{touch-action:none}
+@media (orientation: landscape) and (max-height: 600px) { .palette{grid-template-columns:repeat(13,minmax(0,1fr))} .palette .erase{grid-column:auto;grid-row:auto;aspect-ratio:1} }
+/* Horizontal (móvil tumbado) */
+@media (orientation: landscape) and (max-height: 600px) {
+  header{padding-top:calc(4px + env(safe-area-inset-top));padding-bottom:4px}
+  header h1 small{display:inline;margin-left:8px}
+  main:has(.gm){max-width:none;padding:6px 14px}
+  .gm{flex-direction:row;align-items:flex-start;gap:16px}
+  .gb{width:calc(100svh - 72px);max-width:none;min-width:0;flex:none;margin:0}
+  .gb .pbar,.pzhead,.rvhead{display:none}
+  .sidebars{display:block;background:var(--card);border-radius:12px;padding:2px 10px;margin-bottom:8px}
+  .sidebars .pbar+.pbar{border-top:1px solid var(--line)}
+  .rv .gb{width:calc(100svh - 126px)}
+  .pbar{min-height:34px;padding:2px}
+  .gs{flex:1}
+  .mlist{max-height:40vh}
+}
+/* Tableta */
+@media (min-width: 700px) and (min-height: 700px) {
+  main:has(.gm){max-width:1100px}
+  .gb{max-width:min(620px, calc(100svh - 300px))}
+}
+@media (min-width: 900px) and (orientation: landscape) and (min-height: 601px) {
+  .gm{flex-direction:row;align-items:flex-start;gap:24px}
+  .gb{width:min(calc(100svh - 190px), 60vw);max-width:none;flex:none;margin:0}
+  .gs{flex:1;padding-top:44px}
+  .mlist{max-height:45vh}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">Damas<small id="subtitle"></small></h1>
+  <button class="icon" id="menuBtn" aria-label="Menú">⋮</button>
+</header>
+<div id="updBanner" role="button"></div>
+<main id="app"></main>
+<div id="modal" class="modal hidden"></div>
+<div id="toast"></div>
+
+<script src="damas.js"></script>
+<script src="motor.js"></script>
+<script src="piezas.js"></script>
+<script src="problemas.js"></script>
+<script src="juego.js"></script>
+<script>
+'use strict';
+/* ================= Estado y persistencia ================= */
+const KEY = 'damas.v1';
+const DONATE_URL = 'https://www.paypal.com/ncp/payment/KJCPZWMUM3JXG';
+// En la app Android (Capacitor) la navegación a otra web se abre en el navegador del sistema
+function openExternal(url) {
+  if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) { location.href = url; return; }
+  const w = window.open(url, '_blank', 'noopener');
+  if (!w) location.href = url;
+}
+/* ================= Temas de color ================= */
+const THEMES = {
+  burdeos:  { name: 'Burdeos',   bg:'#22090e', felt:'#3a141b', card:'#4a1a23', card2:'#5c222d', line:'#7a2f3c', txt:'#f7ece4', mut:'#d0aeb0', gold:'#f0c060', onGold:'#2a1e00', red:'#ff7a6b', blue:'#7cc0f0', onBlue:'#06233a', ok:'#7ad69c', outbg:'#2e2a2b' },
+  noche:    { name: 'Noche',     bg:'#121c27', felt:'#1b2a3a', card:'#22364a', card2:'#2b445c', line:'#3a5873', txt:'#f1f4f8', mut:'#a3b3c4', gold:'#f2b84b', onGold:'#2a1a00', red:'#ff6b6b', blue:'#6cc4e8', onBlue:'#062a33', ok:'#62d39a', outbg:'#262a33' },
+  tapete:   { name: 'Tapete',    bg:'#0b2a20', felt:'#0e3b2c', card:'#134a37', card2:'#1a5a43', line:'#2a6b52', txt:'#f3efe2', mut:'#a9c3b6', gold:'#e8b84a', onGold:'#2a1e00', red:'#e2574c', blue:'#5aa9e6', onBlue:'#06233a', ok:'#62c98a', outbg:'#2b2b2b' },
+  morado:   { name: 'Morado',    bg:'#160d22', felt:'#24163a', card:'#2f1d4b', card2:'#3b265e', line:'#4f3779', txt:'#f3eefa', mut:'#b6a8cc', gold:'#ffb547', onGold:'#2a1600', red:'#ff6b81', blue:'#7fb8ff', onBlue:'#06233a', ok:'#6fe0a4', outbg:'#2a2730' },
+  grafito:  { name: 'Grafito',   bg:'#121212', felt:'#1c1c1e', card:'#26262a', card2:'#323238', line:'#46464c', txt:'#f2f2f2', mut:'#a8a8ad', gold:'#4fc3f7', onGold:'#00222f', red:'#ff6b6b', blue:'#9fa8ff', onBlue:'#0d1033', ok:'#69db7c', outbg:'#1a1a1a' },
+  claro:    { name: 'Claro',     bg:'#f1eee6', felt:'#ffffff', card:'#ffffff', card2:'#e8e3d6', line:'#d6cfbd', txt:'#1d2a24', mut:'#66716b', gold:'#1f7a55', onGold:'#ffffff', red:'#c0392b', blue:'#2a73c2', onBlue:'#ffffff', ok:'#2e9e62', outbg:'#e2ded3' },
+  contraste:{ name: 'Alto contraste', bg:'#000000', felt:'#000000', card:'#111111', card2:'#222222', line:'#777777', txt:'#ffffff', mut:'#dddddd', gold:'#ffdd00', onGold:'#000000', red:'#ff4d4d', blue:'#00c8ff', onBlue:'#000000', ok:'#00e676', outbg:'#1a1a1a' }
+};
+function applyTheme(key) {
+  const t = THEMES[key] || THEMES.burdeos, r = document.documentElement.style;
+  const map = { bg:'--bg', felt:'--felt', card:'--card', card2:'--card2', line:'--line', txt:'--txt', mut:'--mut', gold:'--gold', onGold:'--on-gold', red:'--red', blue:'--blue', onBlue:'--on-blue', ok:'--ok', outbg:'--outbg' };
+  for (const k in map) r.setProperty(map[k], t[k]);
+  document.documentElement.style.colorScheme = key === 'claro' ? 'light' : 'dark';
+  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute('content', t.felt);
+  // En la app Android, el fondo de las barras del sistema sigue al tema
+  try { const U = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AppUpdater; if (U && U.setSystemBars) U.setSystemBars({ color: t.felt, light: key === 'claro' }).catch(() => {}); } catch (e) {}
+}
+const FONT_SIZES = [['1', 'Normal'], ['1.15', 'Grande'], ['1.3', 'Muy grande']];
+function applyFont() {
+  const z = parseFloat(S.fontScale) || 1;
+  document.documentElement.style.setProperty('--fs', z);
+}
+function openThemes() {
+  const cur = S.theme || 'burdeos';
+  openModal(`<h3>⛀ Tablero</h3>
+    <div class="bthemes">${Object.entries(BOARDS).map(([k, b]) => `<button data-board="${k}" class="${(S.board || 'madera') === k ? 'on' : ''}"><div class="mini"><i style="background:${b.l}"></i><i style="background:${b.d}"></i><i style="background:${b.d}"></i><i style="background:${b.l}"></i></div><span>${esc(b.name)}</span></button>`).join('')}</div>
+    <label class="f"><span>Coordenadas en el tablero<em>Letras y números en el borde</em></span><input type="checkbox" class="tg" id="thCoords" ${S.coords !== false ? 'checked' : ''}></label>
+    <label class="f" style="margin-bottom:10px"><span>Sonidos<em>Al mover, comer, coronar y al terminar</em></span><input type="checkbox" class="tg" id="thSound" ${S.sound !== false ? 'checked' : ''}></label>
+    <h3>🔠 Tamaño de letra</h3>
+    <div class="kinds" style="margin:6px 0 16px">${FONT_SIZES.map(([v, l]) => `<button data-fs="${v}" class="${String(S.fontScale || '1') === v ? 'on' : ''}" style="font-size:${13 * parseFloat(v)}px">${l}</button>`).join('')}</div>
+    <h3>🎨 Colores de la app</h3><div class="sub">Toca un tema y se aplica al momento.</div>
+    <div class="themes">${Object.entries(THEMES).map(([k, t]) => `
+      <button class="th ${k === cur ? 'on' : ''}" data-theme="${k}" style="background:${t.card}">
+        <div class="pv" style="background:${t.bg}"><i style="background:${t.card}"></i><i style="background:${t.card2}"></i><b style="background:${t.gold}"></b></div>
+        <div class="tn" style="color:${t.txt}">${esc(t.name)}<span style="color:${t.gold}">${k === cur ? '✓' : ''}</span></div>
+      </button>`).join('')}</div>
+    <div class="acts"><button class="btn-gold" id="thOk">Listo</button></div>`);
+  document.querySelectorAll('[data-theme]').forEach(b => b.onclick = () => { S.theme = b.dataset.theme; applyTheme(S.theme); save(); openThemes(); });
+  document.querySelectorAll('[data-board]').forEach(b => b.onclick = () => { S.board = b.dataset.board; save(); render(); openThemes(); });
+  document.querySelectorAll('[data-fs]').forEach(b => b.onclick = () => { S.fontScale = b.dataset.fs; applyFont(); save(); openThemes(); });
+  $('#thCoords').onchange = e => { S.coords = e.target.checked; save(); render(); };
+  $('#thSound').onchange = e => { S.sound = e.target.checked; save(); if (S.sound) Sound.play('move'); };
+  $('#thOk').onclick = closeModal;
+}
+
+const APP_VERSION = '1.0.0';
+const REPO = 'csuarezsm/Damas';
+const MAX_ARCHIVE = 500;
+const uid = () => Math.random().toString(36).slice(2, 10);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = s => document.querySelector(s);
+const nkey = n => String(n || '').trim().toLowerCase();
+const pad2 = n => String(n).padStart(2, '0');
+
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } }
+let saveWarned = false;
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); saveWarned = false; }
+  catch (e) { if (!saveWarned) { saveWarned = true; setTimeout(() => toast('⚠️ No se pudo guardar. Exporta una copia y borra partidas antiguas.'), 0); } }
+}
+const DEF_DRAFT = () => ({ mode: 'ai', ai: { name: '', color: 0, level: 2, clock: '', cMin: 10, cInc: 0, learn: false }, local: { white: '', black: '', clock: '', cMin: 10, cInc: 0, flip: false } });
+let S = load() || {};
+S.game = S.game || null;
+S.draft = Object.assign(DEF_DRAFT(), S.draft || {});
+S.draft.ai = Object.assign(DEF_DRAFT().ai, S.draft.ai || {}); S.draft.local = Object.assign(DEF_DRAFT().local, S.draft.local || {});
+S.archive = S.archive || [];
+S.roster = Array.isArray(S.roster) ? S.roster : [];
+S.solved = S.solved || {};
+S.pz = S.pz || null;
+S.drill = S.drill || null;
+S.mist = S.mist || {};
+
+/* ================= Utilidades UI ================= */
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
+function vibrate(ms) { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
+let modalOnClose = null;      // se ejecuta al cerrar la ventana (por cualquier vía)
+function openModal(html) { const m = $('#modal'); modalOnClose = null; m.innerHTML = '<div class="sheet">' + html + '</div>'; m.classList.remove('hidden'); }
+function closeModal() { const m = $('#modal'); m.classList.add('hidden'); m.innerHTML = ''; const f = modalOnClose; modalOnClose = null; if (f) f(); }
+$('#updBanner').onclick = () => openUpdAvail();
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+function confirmBox(title, text, okLabel, onOk, danger) {
+  openModal(`<h3>${esc(title)}</h3><div class="sub">${esc(text)}</div>
+    <div class="acts"><button class="btn-ghost" id="cNo">Cancelar</button><button class="${danger ? 'btn-red' : 'btn-gold'}" id="cOk">${esc(okLabel)}</button></div>`);
+  $('#cNo').onclick = closeModal;
+  $('#cOk').onclick = () => { closeModal(); onOk(); };
+}
+
+/* Mantener la pantalla encendida durante la partida */
+let wakeLock = null;
+async function keepAwake() {
+  try { if (S.game && 'wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => wakeLock = null); } } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') keepAwake(); });
+
+/* ================= Render principal ================= */
+function render() {
+  save();
+  if (REVIEW) renderReview();
+  else if (EDITOR) renderEditor();
+  else if (S.drill) renderDrill();
+  else if (S.pz) renderPuzzle();
+  else if (S.game) renderGame();
+  else renderSetup();
+}
+
+/* ---------- Jugadores habituales ---------- */
+const gameNames = a => a.mode === 'ai' ? [a.human === 0 ? a.white : a.black] : a.mode === 'online' ? [a.seat === 1 ? a.black : a.white] : a.mode === 'pgn' ? [] : [a.white, a.black];
+function rosterSorted() {
+  const c = {}; S.archive.forEach(a => gameNames(a).forEach(n => { const k = nkey(n); c[k] = (c[k] || 0) + 1; }));
+  return S.roster.slice().sort((a, b) => (c[nkey(b)] || 0) - (c[nkey(a)] || 0) || a.localeCompare(b, 'es'));
+}
+function renameEverywhere(oldName, newName) {
+  const k = nkey(oldName);
+  const fix = g => { if (!g || g.mode === 'pgn') return; if (nkey(g.white) === k) g.white = newName; if (nkey(g.black) === k) g.black = newName; };
+  S.archive.forEach(fix); fix(S.game);
+  if (nkey(S.draft.ai.name) === k) S.draft.ai.name = newName;
+  if (nkey(S.draft.local.white) === k) S.draft.local.white = newName;
+  if (nkey(S.draft.local.black) === k) S.draft.local.black = newName;
+}
+function openRoster() {
+  const games = {}; S.archive.forEach(a => gameNames(a).forEach(n => { const k = nkey(n); games[k] = (games[k] || 0) + 1; }));
+  const list = rosterSorted();
+  openModal(`<h3>👥 Jugadores habituales</h3>
+    <div class="sub">Corrige un nombre y se cambia también en el historial y la clasificación. Si escribes el nombre de otro jugador de la lista, se <b>unen</b> (útil para «Tere» y «Teresa»).</div>
+    ${list.map((n, i) => `<div class="hrow"><div class="top">
+      <input type="text" maxlength="18" value="${esc(n)}" data-ro="${i}" data-orig="${esc(n)}" style="flex:1;min-width:0">
+      <span class="mut" style="white-space:nowrap">${games[nkey(n)] || 0} part.</span>
+      ${games[nkey(n)] ? `<button class="closebtn" data-pstat="${esc(n)}" aria-label="Ver ficha">📊</button>` : ''}
+      <button class="closebtn" data-rodel="${esc(n)}" aria-label="Quitar">✕</button></div></div>`).join('') || '<div class="empty">Aún no hay jugadores guardados.</div>'}
+    <div class="hrow"><div class="top"><input type="text" maxlength="18" id="roNew" placeholder="Nuevo jugador" style="flex:1;min-width:0"><button class="closebtn" id="roAdd">＋ Añadir</button></div></div>
+    <div class="mut">Quitar a alguien de la lista no borra sus partidas del historial.</div>
+    <div class="acts"><button class="btn-ghost" id="roC">Cancelar</button><button class="btn-gold" id="roS">Guardar</button></div>`);
+  const pending = { removed: new Set() };
+  $('#roC').onclick = () => { closeModal(); render(); };
+  document.querySelectorAll('[data-pstat]').forEach(b => b.onclick = () => openPlayer(b.dataset.pstat, openRoster));
+  document.querySelectorAll('[data-rodel]').forEach(b => b.onclick = () => { pending.removed.add(nkey(b.dataset.rodel)); b.closest('.hrow').style.display = 'none'; });
+  const readEdits = () => [...document.querySelectorAll('[data-ro]')].map(el => ({ o: el.dataset.orig, v: cleanName(el.value) }));
+  const applyRoster = (edits) => {
+    const merges = [];
+    edits.forEach(({ o, v }) => {
+      if (pending.removed.has(nkey(o)) || !v || v === o) return;
+      const target = S.roster.find(x => nkey(x) === nkey(v) && nkey(x) !== nkey(o));
+      if (target) merges.push(o + ' → ' + target);
+      renameEverywhere(o, target || v);
+      S.roster = S.roster.filter(x => nkey(x) !== nkey(o));
+      if (!target) S.roster.push(v);
+    });
+    S.roster = S.roster.filter(x => !pending.removed.has(nkey(x)));
+    return merges;
+  };
+  $('#roAdd').onclick = () => {
+    const v = cleanName($('#roNew').value); if (!v) return;
+    if (S.roster.some(x => nkey(x) === nkey(v))) { toast('Ya está en la lista'); return; }
+    applyRoster(readEdits()); S.roster.push(v); save(); openRoster();
+  };
+  $('#roS').onclick = () => {
+    const edits = readEdits();
+    const willMerge = edits.some(({ o, v }) => v && v !== o && !pending.removed.has(nkey(o)) && S.roster.some(x => nkey(x) === nkey(v) && nkey(x) !== nkey(o)));
+    const go = () => { const m = applyRoster(edits); save(); closeModal(); render(); toast(m.length ? 'Jugadores unidos' : 'Guardado'); };
+    if (willMerge) confirmBox('Unir jugadores', 'Las partidas de los dos nombres pasarán a contar como un solo jugador en la clasificación. No se puede deshacer.', 'Unir', go);
+    else go();
+  };
+}
+
+/* ---------- Lista de partidas ---------- */
+function resultFor(a, c) { if (!a.result) return null; if (a.result === '1/2-1/2') return 0.5; return (a.result === '1-0') === (c === 0) ? 1 : 0; }
+function archiveRow(a, i) {
+  const dt = new Date(a.finished || a.created);
+  const n = Math.ceil((a.moves || []).length / 2);
+  let cls = '', txt = a.result || 'sin terminar';
+  if ((a.mode === 'ai' || a.mode === 'online') && a.result) { const r = resultFor(a, a.mode === 'ai' ? a.human : a.seat); cls = r === 1 ? 'w' : r === 0 ? 'l' : ''; txt = r === 1 ? 'Victoria' : r === 0 ? 'Derrota' : 'Tablas'; }
+  else if (a.result === '1/2-1/2') txt = '½–½';
+  return `<div class="hrow" data-arch="${i}" style="cursor:pointer"><div class="top"><div class="n">${esc(a.white)} – ${esc(a.black)}<small>${dt.toLocaleDateString('es-ES')} ${dt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} · ${n} jugada${n === 1 ? '' : 's'}${a.reason && CH.REASONS[a.reason] ? ' · ' + esc(CH.REASONS[a.reason]) : ''}${a.analysis ? ' · 🔍' : ''}${a.src === 'pgn' ? ' · PGN' : ''}</small></div><span class="res ${cls}">${esc(txt)}</span></div></div>`;
+}
+function archiveHtml(max) { return S.archive.slice(0, max || 5).map(archiveRow).join(''); }
+
+/* ---------- Tienda: GitHub (actualizador propio) o Google Play ---------- */
+let STORE = 'github';
+const PLAY_URL = 'https://play.google.com/store/apps/details?id=com.itcanarias.damas';
+const storeReady = (async () => {
+  try { const U = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AppUpdater; if (U && U.info) { const r = await U.info(); if (r && r.store === 'play') STORE = 'play'; } } catch (e) {}
+})();
+const isPlay = () => STORE === 'play';
+/* ---------- Actualizaciones ---------- */
+function cmpVer(a, b) { const x = a.split('.').map(Number), y = b.split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d; } return 0; }
+async function checkUpdates(manual) {
+  if (manual) openModal('<h3>🔄 Buscando actualizaciones…</h3><div class="sub">Un momento.</div>');
+  try {
+    const r = await fetch('https://api.github.com/repos/' + REPO + '/releases/latest', { cache: 'no-store', headers: { Accept: 'application/vnd.github+json' } });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    const v = String(j.tag_name || '').replace(/^v/, '');
+    const apk = (j.assets || []).find(a => /\.apk$/i.test(a.name));
+    S.lastUpdateCheck = Date.now(); save();
+    if (!/^\d+\.\d+\.\d+$/.test(v) || !apk) { if (manual) showUpdMsg('No hay ninguna versión publicada todavía.'); return; }
+    if (cmpVer(v, APP_VERSION) > 0) {
+      S.updAvail = { v, url: apk.browser_download_url, page: j.html_url, note: (j.body || '').split('\n')[0] }; save(); refreshUpdBadge();
+      // el aviso grande sale solo una vez por versión; la marca se queda hasta actualizar
+      const busy = !$('#modal').classList.contains('hidden');
+      if (manual || (!busy && S.updNotified !== v)) { S.updNotified = v; save(); openUpdAvail(); }
+    } else {
+      S.updAvail = null; save(); refreshUpdBadge();
+      if (manual) showUpdMsg(`Tienes la última versión (v${APP_VERSION}).`, '✅');
+    }
+  } catch (e) {
+    if (manual) showUpdMsg('No se pudo comprobar. Revisa que tengas conexión a internet.', '⚠️');
+  }
+}
+function hasUpd() { return !isPlay() && isNative() && !!(S.updAvail && cmpVer(S.updAvail.v, APP_VERSION) > 0); }
+function openUpdAvail() { if (hasUpd()) showUpdate(S.updAvail.v, S.updAvail.url, S.updAvail.page, S.updAvail.note); }
+function refreshUpdBadge() {
+  const on = hasUpd();
+  $('#menuBtn').classList.toggle('dot', on);
+  const b = $('#updBanner');
+  b.classList.toggle('on', on);
+  if (on) b.innerHTML = `🎉 Nueva versión v${esc(S.updAvail.v)} disponible · <u>Actualizar</u>`;
+}
+async function autoCheckUpdates() {
+  await storeReady;
+  if (isPlay()) { if (S.updAvail) { S.updAvail = null; save(); refreshUpdBadge(); } return; }
+  if (!isNative() || !navigator.onLine) return;
+  if (!S.lastUpdateCheck || Date.now() - S.lastUpdateCheck > 3600e3) checkUpdates(false);
+}
+function showUpdMsg(t, icon) { openModal(`<h3>${icon || 'ℹ️'} Actualizaciones</h3><div class="sub">${esc(t)}</div><div class="acts"><button class="btn-gold" id="uOk">Vale</button></div>`); $('#uOk').onclick = closeModal; }
+function showUpdate(v, url, page, note) {
+  openModal(`<h3>🎉 Nueva versión disponible</h3>
+    <div class="sub">Tienes la v${APP_VERSION} y ya está la <b>v${esc(v)}</b>.${note ? '<br>' + esc(note.replace(/^v[\d.]+:\s*/, 'Novedades: ')) : ''}<br><br>Tus partidas, el historial y los colores se conservan.</div>
+    <div id="uProg" class="mut" style="min-height:1.2em"></div>
+    <div class="acts"><button class="btn-ghost" id="uLater">Más tarde</button><button class="btn-gold" id="uGo">Actualizar ahora</button></div>`);
+  $('#uLater').onclick = closeModal;
+  $('#uGo').onclick = () => installUpdate(url, page);
+}
+async function installUpdate(url, page) {
+  if (!String(url).startsWith('https://github.com/' + REPO + '/releases/download/')) { toast('Descarga no válida'); return; }
+  const U = isNative() && window.Capacitor.Plugins && window.Capacitor.Plugins.AppUpdater;
+  if (!U) { openExternal(page || ('https://github.com/' + REPO + '/releases/latest')); return; }
+  const prog = $('#uProg'), go = $('#uGo');
+  try {
+    const { allowed } = await U.canInstall();
+    if (!allowed) {
+      openModal(`<h3>Un permiso, solo la primera vez</h3><div class="sub">Android necesita que permitas a Damas instalar su actualización.<br><br>Pulsa <b>Abrir ajustes</b>, activa <b>«Permitir de esta fuente»</b>, vuelve atrás y pulsa otra vez <b>Actualizar</b>.</div>
+        <div class="acts"><button class="btn-ghost" id="pNo">Cancelar</button><button class="btn-gold" id="pSet">Abrir ajustes</button></div>`);
+      $('#pNo').onclick = closeModal;
+      $('#pSet').onclick = async () => { closeModal(); try { await U.openInstallSettings(); } catch (e) { toast('Ábrelo en Ajustes → Aplicaciones → Damas'); } };
+      return;
+    }
+    go.disabled = true; go.textContent = 'Descargando…'; prog.textContent = 'Descargando 0%';
+    const h = await U.addListener('progress', d => { prog.textContent = 'Descargando ' + d.pct + '%'; });
+    await U.downloadAndInstall({ url });
+    try { h.remove(); } catch (e) {}
+    prog.textContent = 'Descarga completa. Pulsa «Actualizar» en la ventana de Android.';
+    go.textContent = 'Actualizar ahora'; go.disabled = false;
+  } catch (e) {
+    prog.textContent = String(e && e.message || e);
+    go.textContent = 'Reintentar'; go.disabled = false;
+  }
+}
+
+/* ---------- Compartir resultados como imagen ---------- */
+function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#000'; }
+function drawShareImage({ title, subtitle, cols, rows, note }) {
+  const W = 1080, P = 56, rowH = 92, headH = 70;
+  const H = P + 70 + 50 + 40 + headH + rows.length * rowH + 40 + (note ? 50 : 0) + 60 + P;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  const bg = cssVar('--bg'), card = cssVar('--card'), card2 = cssVar('--card2'), txt = cssVar('--txt'), mut = cssVar('--mut'), gold = cssVar('--gold'), line = cssVar('--line');
+  const font = (w, sz) => `${w} ${sz}px system-ui, -apple-system, Roboto, "Segoe UI", sans-serif`;
+  const rr = (x, y, w, h, r, fill) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); g.fillStyle = fill; g.fill(); };
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  let y = P;
+  g.fillStyle = gold; g.font = font(800, 30); g.fillText('⛀  DAMAS', P, y + 30);
+  g.fillStyle = txt; g.font = font(800, 54); g.fillText(title, P, y + 100);
+  g.fillStyle = mut; g.font = font(500, 32); g.fillText(subtitle, P, y + 150);
+  y += 190;
+  const tableH = headH + rows.length * rowH;
+  rr(P, y, W - 2 * P, tableH, 28, card);
+  const xs = [P + 30, P + 120]; const rightCols = cols.slice(2); const colW = 130;
+  rightCols.forEach((_, i) => xs.push(W - P - 30 - (rightCols.length - 1 - i) * colW));
+  g.fillStyle = card2; g.save(); g.beginPath(); g.rect(P, y, W - 2 * P, headH); g.clip(); rr(P, y, W - 2 * P, tableH, 28, card2); g.restore();
+  g.font = font(700, 28); g.fillStyle = mut;
+  cols.forEach((h, i) => { g.textAlign = i < 2 ? 'left' : 'right'; g.fillText(h, xs[i], y + 46); });
+  rows.forEach((r, ri) => {
+    const ty = y + headH + ri * rowH;
+    if (ri) { g.fillStyle = line; g.fillRect(P + 20, ty, W - 2 * P - 40, 2); }
+    r.forEach((v, i) => {
+      g.textAlign = i < 2 ? 'left' : 'right';
+      g.fillStyle = i === 2 ? gold : txt;
+      g.font = font(i === 1 || i === 2 ? 800 : 500, i === 0 ? 40 : 38);
+      let t = String(v); if (i === 1) { while (g.measureText(t).width > xs[2] - xs[1] - colW + 20 && t.length > 3) t = t.slice(0, -2) + '…'; }
+      g.fillText(t, xs[i], ty + 60);
+    });
+  });
+  g.textAlign = 'left'; y += tableH + 50;
+  if (note) { g.fillStyle = mut; g.font = font(500, 28); g.fillText(note, P, y); y += 50; }
+  g.fillStyle = mut; g.font = font(500, 26); g.fillText('Damas — © 2026 IT Canarias', P, y + 20);
+  return c.toDataURL('image/png');
+}
+async function shareImage(dataUrl, fileName, text) {
+  try {
+    if (isNative()) {
+      const { Filesystem, Share } = window.Capacitor.Plugins;
+      const r = await Filesystem.writeFile({ path: fileName, data: dataUrl.split(',')[1], directory: 'CACHE' });
+      await Share.share({ title: 'Damas', text, files: [r.uri], dialogTitle: 'Compartir' });
+      return;
+    }
+    const blob = await (await fetch(dataUrl)).blob();
+    const file = new File([blob], fileName, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; }
+    const a = document.createElement('a'); a.href = dataUrl; a.download = fileName; document.body.appendChild(a); a.click(); a.remove();
+    toast('Imagen descargada');
+  } catch (e) {
+    if (!/cancel|abort/i.test(String(e && (e.message || e.name)))) toast('No se pudo compartir');
+  }
+}
+
+/* ---------- Borrar datos ---------- */
+function openWipe() {
+  openModal(`<h3>🗑 Borrar datos</h3><div class="sub">Elige qué quieres borrar. No se puede deshacer, así que antes puedes guardar una copia.</div>
+    <div class="menu">
+      ${S.archive.length ? '<button id="wCopy">💾 Guardar una copia antes</button>' : ''}
+      <button id="wHist">Solo el historial de partidas<br><small class="mut">Se mantienen jugadores, problemas, colores y la partida en curso</small></button>
+      <button id="wPz">Solo los problemas resueltos y el repaso de errores</button>
+      <button id="wAll" class="btn-red">Todo: dejar la app como nueva<br><small>Partidas, jugadores, problemas, colores y copias automáticas</small></button>
+    </div>
+    <div class="acts"><button class="btn-ghost" id="wNo">Cancelar</button></div>`);
+  $('#wNo').onclick = closeModal;
+  const cp = $('#wCopy'); if (cp) cp.onclick = () => exportBackup(false);
+  $('#wHist').onclick = () => confirmBox('Borrar historial', `Se borrarán las ${S.archive.length} partidas guardadas y la clasificación.`, 'Borrar historial', () => { S.archive = []; save(); render(); toast('Historial borrado'); autoBackup(true); }, true);
+  $('#wPz').onclick = () => confirmBox('Borrar problemas resueltos', 'Los problemas volverán a aparecer sin resolver.', 'Borrar', () => { S.solved = {}; S.mist = {}; S.pzElo = undefined; S.pzRated = {}; S.pz = null; S.drill = null; save(); render(); toast('Problemas reiniciados'); }, true);
+  $('#wAll').onclick = () => confirmBox('Borrar TODO', 'La app quedará como recién instalada. ¿Seguro?', 'Sí, borrar todo', () => confirmBox('Última confirmación', 'Se perderán todas las partidas y ajustes de este móvil.', 'Borrar definitivamente', wipeAll, true), true);
+}
+async function wipeAll() {
+  if (isNative()) {
+    const { Filesystem } = window.Capacitor.Plugins;
+    for (const [path, directory] of [[AUTO_FILE, 'DATA'], ['Damas/' + AUTO_FILE, 'DOCUMENTS']]) { try { await Filesystem.deleteFile({ path, directory }); } catch (e) {} }
+  }
+  try { localStorage.removeItem(KEY); localStorage.setItem(KEY, JSON.stringify({ restoreOffered: true, onboarded: true })); } catch (e) {}
+  location.reload();
+}
+
+/* ---------- Pantalla de bienvenida ---------- */
+const WELCOME = [
+  ['⛀', 'Bienvenido a Damas', 'Damas españolas contra la máquina, con otra persona en el mismo móvil o en línea, y problemas para practicar. Gratis y sin anuncios.'],
+  ['🤖', 'Contra la máquina', 'Seis niveles, de principiante a maestro. Con el modo aprendizaje tienes pistas y te avisa si una jugada pierde material: tú decides si la deshaces.'],
+  ['👆', 'Mover las fichas', 'Toca una ficha y luego la casilla, o arrástrala. Comer es obligatorio, y siempre el máximo de piezas: la app solo te deja las jugadas válidas.'],
+  ['⏱️', 'Reloj, dos jugadores y en línea', 'Elige un ritmo o juega sin reloj. En línea, crea una sala y pasa el código por WhatsApp.'],
+  ['🔍', 'Analiza tus partidas', 'Al terminar, el motor revisa la partida, marca los errores y te enseña la mejor jugada en cada momento.'],
+  ['📊', 'Elo, PDN y problemas', 'Cada jugador tiene su Elo en la clasificación. Exporta e importa partidas en PDN y practica con problemas de «juegan y ganan».']
+];
+function openWelcome(i) {
+  i = Math.max(0, Math.min(WELCOME.length - 1, i || 0));
+  const [ic, t, d] = WELCOME[i], last = i === WELCOME.length - 1;
+  openModal(`<div style="text-align:center;padding:10px 4px 0">
+      <div style="font-size:calc(64px * var(--fs, 1));line-height:1.2">${ic}</div>
+      <h3 style="margin:10px 0 8px;font-size:calc(22px * var(--fs, 1))">${esc(t)}</h3>
+      <div class="mut" style="font-size:calc(16px * var(--fs, 1));line-height:1.5;min-height:6em">${esc(d)}</div>
+      <div style="display:flex;justify-content:center;gap:6px;margin:14px 0 4px">${WELCOME.map((_, k) => `<i style="width:${k === i ? 20 : 8}px;height:8px;border-radius:4px;background:${k === i ? 'var(--gold)' : 'var(--line)'};display:block"></i>`).join('')}</div>
+    </div>
+    <div class="acts">${i ? '<button class="btn-ghost" id="wbPrev">‹ Atrás</button>' : '<button class="btn-ghost" id="wbSkip">Saltar</button>'}<button class="btn-gold" id="wbNext">${last ? '¡A jugar!' : 'Siguiente ›'}</button></div>`);
+  const done = () => { S.onboarded = true; save(); closeModal(); openIOSInstall(false); };
+  const sk = $('#wbSkip'); if (sk) sk.onclick = done;
+  const pv = $('#wbPrev'); if (pv) pv.onclick = () => openWelcome(i - 1);
+  $('#wbNext').onclick = () => last ? done() : openWelcome(i + 1);
+}
+
+/* ---------- Reglas del juego ---------- */
+function openGameRules() {
+  openModal(`<h3>📖 Reglas de las damas españolas</h3><div class="sub">Lo esencial, tal como lo aplica la app.</div><div class="rules">
+    <h4>El tablero</h4><p>Tablero de 8×8 con la gran diagonal a la derecha de cada jugador. Se juega solo en las 32 casillas de juego (en la app, las oscuras). Cada bando empieza con 12 peones en sus tres primeras filas. Empiezan las blancas.</p>
+    <h4>Cómo se mueven</h4><ul>
+      <li><b>Peón</b>: avanza una casilla en diagonal, nunca hacia atrás.</li>
+      <li><b>Dama</b>: el peón que llega a la última fila corona y se convierte en dama. La dama <b>vuela</b>: va en diagonal, adelante o atrás, tantas casillas libres como quiera.</li></ul>
+    <h4>Comer</h4><ul>
+      <li>Se come saltando una pieza contraria que tenga detrás una casilla libre. El peón come solo hacia delante; la dama, en cualquier diagonal y a distancia, y cae en cualquier casilla libre detrás de la pieza.</li>
+      <li>Si después de comer se puede seguir comiendo, hay que seguir en la misma jugada.</li>
+      <li><b>Comer es obligatorio.</b> <b>Ley de la cantidad</b>: hay que elegir la jugada que come más piezas. <b>Ley de la calidad</b>: si comen las mismas, la que come más damas.</li>
+      <li>Las piezas comidas se quitan al terminar la jugada: no se puede saltar dos veces la misma ni pasar por encima de ella.</li>
+      <li>El peón que llega a la última fila comiendo corona y ahí acaba la jugada.</li></ul>
+    <h4>Final de la partida</h4><ul>
+      <li><b>Gana</b> quien deja al rival sin piezas o sin ninguna jugada posible. También se gana si el rival se rinde o se queda sin tiempo.</li>
+      <li><b>Tablas</b>: la misma posición tres veces; 20 jugadas de dama por cada bando sin mover un peón ni comer; tres damas (una en la gran diagonal) contra una dama que no ganan en 12 jugadas; una dama contra una dama; o acuerdo.</li></ul>
+    <h4>En la app</h4><p>Las casillas llevan su número del 1 al 32 (notación española: el 1 es la esquina de la derecha de las blancas), y así se anotan las jugadas: <b>10-14</b> mueve, <b>14x23</b> come. Las tablas se aplican solas. Contra la máquina puedes deshacer jugadas.</p>
+  </div><div class="acts"><button class="btn-gold" id="grOk">Entendido</button></div>`);
+  $('#grOk').onclick = closeModal;
+}
+
+/* ---------- Compartir la app ---------- */
+const APK_URL = 'https://github.com/' + REPO + '/releases/latest/download/damas.apk';
+const WEB_URL = 'https://csuarezsm.github.io/Damas/app/';          // versión web instalable (iPhone y cualquier navegador)
+const DESCARGA_URL = 'https://csuarezsm.github.io/Damas/';         // página con Android e iPhone
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = () => window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+// iPhone/iPad en Safari sin instalar: explicar cómo añadirla a la pantalla de inicio (si no, iOS puede borrar los datos)
+function openIOSInstall(force) {
+  if (!force && (!isIOS() || isStandalone() || isNative() || S.iosHint)) return false;
+  S.iosHint = true; save();
+  openModal(`<h3>📲 Instala Damas en tu iPhone</h3><div class="sub">Así tendrás su icono como cualquier app, funcionará sin conexión y tus partidas quedarán guardadas.</div>
+    <ol class="rules" style="padding-left:22px;line-height:1.6"><li>Pulsa el botón <b>Compartir</b> de Safari (el cuadrado con la flecha hacia arriba).</li><li>Baja y elige <b>«Añadir a pantalla de inicio»</b>.</li><li>Pulsa <b>Añadir</b> y abre Damas desde su icono.</li></ol>
+    <div class="mut">Si solo la usas desde Safari y pasan semanas sin abrirla, iOS puede borrar sus datos. Para no perder nada: ⋮ → Clasificación y partidas → Partidas → Guardar copia de seguridad.</div>
+    <div class="acts"><button class="btn-gold" id="iosOk">Entendido</button></div>`);
+  $('#iosOk').onclick = closeModal;
+  return true;
+}
+async function shareApp() {
+  // Un solo mensaje que vale para quien lo reciba, tenga iPhone o Android
+  const text = '⛀ Damas — juega contra la máquina (6 niveles), con un amigo o en línea, y resuelve problemas. Damas españolas, gratis y sin anuncios.\n\n'
+    + (isPlay()
+      ? '🤖 Android (Google Play): ' + PLAY_URL + '\n🍏 iPhone: ' + WEB_URL + '\n(en el iPhone, ábrelo en Safari y pulsa Compartir → «Añadir a pantalla de inicio»)'
+      : '📲 Descárgala aquí, para Android o iPhone:\n' + DESCARGA_URL + '\n\n🤖 Android: «Descargar para Android» (mejor desde Chrome).\n🍏 iPhone: se abre en Safari; pulsa Compartir → «Añadir a pantalla de inicio».');
+  try {
+    if (isNative()) { await window.Capacitor.Plugins.Share.share({ title: 'Damas', text, dialogTitle: 'Compartir la app' }); return; }
+    if (navigator.share) { await navigator.share({ title: 'Damas', text }); return; }
+    await navigator.clipboard.writeText(text); toast('Enlace copiado');
+  } catch (e) {
+    if (!/cancel|abort/i.test(String(e && (e.message || e.name)))) toast('No se pudo compartir');
+  }
+}
+
+/* ---------- Copia de seguridad ---------- */
+const isNative = () => !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+function backupJSON() {
+  return JSON.stringify({ app: 'damas', format: 1, version: APP_VERSION, exported: new Date().toISOString(), archive: S.archive, game: S.game, roster: S.roster, solved: S.solved, mist: S.mist, pzElo: S.pzElo, pzRated: S.pzRated, theme: S.theme, board: S.board, coords: S.coords, sound: S.sound, fontScale: S.fontScale });
+}
+const SAFE_ID = /^[A-Za-z0-9_-]{1,40}$/;
+const UCI_RE = /^([a-h][1-8]){2,13}$/;
+const num = (v, d) => { const n = Number(v); return Number.isFinite(n) ? Math.round(n) : d; };
+const cleanName = n => String(n == null ? '' : n).replace(/[<>"'`\u0000-\u001f]/g, '').trim().slice(0, 24);
+// Devuelve una partida con solo datos válidos (ids seguros, jugadas legales, números de verdad, textos limpios) o null
+function cleanGame(g) {
+  if (!g || typeof g !== 'object' || !Array.isArray(g.moves)) return null;
+  let startFen = null;
+  if (g.startFen) { try { new CH.Position(String(g.startFen)); startFen = String(g.startFen).slice(0, 100); } catch (e) { return null; } }
+  const R = CH.replay(g.moves.slice(0, 1200).map(String), startFen);
+  const mode = ['ai', 'local', 'pgn', 'online'].includes(g.mode) ? g.mode : 'local';
+  const out = { id: SAFE_ID.test(String(g.id)) ? String(g.id) : uid(), created: num(g.created, Date.now()), mode,
+    white: cleanName(g.white) || 'Blancas', black: cleanName(g.black) || 'Negras', moves: R.moves, startFen,
+    result: ['1-0', '0-1', '1/2-1/2'].includes(g.result) ? g.result : null, reason: Object.prototype.hasOwnProperty.call(CH.REASONS, g.reason) ? g.reason : '',
+    undos: Math.max(0, num(g.undos, 0)), hints: Math.max(0, num(g.hints, 0)), clock: null };
+  if (g.finished) out.finished = num(g.finished, out.created);
+  if (mode === 'ai') { out.human = g.human === 1 ? 1 : 0; out.level = Math.max(1, Math.min(6, num(g.level, 3))); out.learn = !!g.learn; }
+  if (mode === 'local') out.flip = !!g.flip;
+  if (mode === 'online') { out.seat = g.seat === 1 ? 1 : 0; if (/^[A-Z0-9]{4}$/.test(String(g.room))) out.room = String(g.room); }
+  if (mode === 'pgn') { out.src = 'pgn'; ['event', 'site', 'round'].forEach(k => { if (g[k]) out[k] = cleanText(g[k]); }); if (/^[\d?.]{4,10}$/.test(String(g.date || ''))) out.date = String(g.date); }
+  if (g.clock && typeof g.clock === 'object') {
+    out.clock = { base: Math.max(1000, Math.min(36e5 * 3, num(g.clock.base, 600000))), inc: Math.max(0, Math.min(60000, num(g.clock.inc, 0))) };
+    const t = Array.isArray(g.times) ? g.times : [];
+    out.times = [Math.max(0, num(t[0], out.clock.base)), Math.max(0, num(t[1], out.clock.base))]; out.tick = null;
+  }
+  if (g.analysis && Array.isArray(g.analysis.evals) && g.analysis.evals.length === R.moves.length + 1)
+    out.analysis = { at: num(g.analysis.at, 0), evals: g.analysis.evals.map(e => [Array.isArray(e) && UCI_RE.test(String(e[0])) ? String(e[0]) : '', Array.isArray(e) ? Math.max(-32000, Math.min(32000, num(e[1], 0))) : 0]) };
+  return out;
+}
+function validBackup(b) { return b && b.app === 'damas' && Array.isArray(b.archive); }
+// Añade lo que trae la copia sin duplicar ni borrar nada de lo que ya hay
+function mergeBackup(b) {
+  const have = new Set(S.archive.map(a => a.id));
+  const nuevas = b.archive.slice(0, MAX_ARCHIVE).map(a => cleanGame(a)).filter(a => a && !have.has(a.id));
+  S.archive = S.archive.concat(nuevas).sort((x, y) => (y.finished || y.created || 0) - (x.finished || x.created || 0)).slice(0, MAX_ARCHIVE);
+  const g = !S.game && cleanGame(b.game); if (g && !g.result && g.mode !== 'online') S.game = g;
+  (Array.isArray(b.roster) ? b.roster : []).map(cleanName).forEach(n => { if (n && !isPlaceholder(n) && !S.roster.some(x => nkey(x) === nkey(n))) S.roster.push(n); });
+  S.archive.forEach(a => gameNames(a).forEach(n => { if (n && !isPlaceholder(n) && !S.roster.some(x => nkey(x) === nkey(n))) S.roster.push(n); }));
+  if (b.solved && typeof b.solved === 'object') for (const k in b.solved) if (SAFE_ID.test(k)) S.solved[k] = Math.max(S.solved[k] || 0, Math.min(2, num(b.solved[k], 0)));
+  if (b.pzRated && typeof b.pzRated === 'object' && !S.pzElo && Number.isFinite(+b.pzElo)) { S.pzElo = Math.max(100, Math.min(3000, num(b.pzElo, 1000))); S.pzRated = {}; for (const k in b.pzRated) if (SAFE_ID.test(k)) S.pzRated[k] = 1; }
+  if (b.mist && typeof b.mist === 'object') for (const k in b.mist) if (/^[A-Za-z0-9_-]{1,40}:\d{1,4}$/.test(k)) S.mist[k] = Math.max(S.mist[k] || 0, Math.min(2, num(b.mist[k], 0)));
+  if (!S.theme && THEMES[b.theme]) { S.theme = b.theme; applyTheme(S.theme); }
+  if (!S.board && BOARDS[b.board]) S.board = b.board;
+  if (!S.fontScale && FONT_SIZES.some(f => f[0] === String(b.fontScale))) { S.fontScale = String(b.fontScale); applyFont(); }
+  return nuevas.length;
+}
+
+/* Copia automática (solo app Android):
+   - en la memoria interna de la app: Android la incluye en su copia de seguridad de Google y la devuelve al reinstalar o cambiar de móvil;
+   - en Documentos/Damas del móvil, si Android lo permite. */
+const AUTO_FILE = 'damas-copia-auto.json';
+let autoBackupBusy = false;
+async function autoBackup(force) {
+  if (!isNative() || autoBackupBusy) return;
+  if (!S.archive.length && !S.game) return;
+  if (!force && S.lastAutoBackup && Date.now() - S.lastAutoBackup < 3600e3) return;
+  autoBackupBusy = true;
+  try {
+    const { Filesystem } = window.Capacitor.Plugins, data = backupJSON();
+    await Filesystem.writeFile({ path: AUTO_FILE, data, directory: 'DATA', encoding: 'utf8' });
+    try { await Filesystem.writeFile({ path: 'Damas/' + AUTO_FILE, data, directory: 'DOCUMENTS', encoding: 'utf8', recursive: true }); S.autoBackupDocs = true; }
+    catch (e) { S.autoBackupDocs = false; }
+    S.lastAutoBackup = Date.now(); save();
+  } catch (e) { /* sin copia esta vez; se reintenta más tarde */ }
+  autoBackupBusy = false;
+}
+// Tras reinstalar: si la app está vacía y hay una copia, ofrecer recuperarla
+async function offerRestore() {
+  if (!isNative() || S.archive.length || S.game || S.restoreOffered) return;
+  const { Filesystem } = window.Capacitor.Plugins;
+  let b = null;
+  for (const [path, directory] of [[AUTO_FILE, 'DATA'], ['Damas/' + AUTO_FILE, 'DOCUMENTS']]) {
+    try { const r = await Filesystem.readFile({ path, directory, encoding: 'utf8' }); const j = JSON.parse(r.data); if (validBackup(j) && (j.archive.length || j.game)) { b = j; break; } } catch (e) {}
+  }
+  S.restoreOffered = true; save();
+  if (!b) return;
+  const when = new Date(b.exported).toLocaleString('es-ES', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+  confirmBox('Recuperar tus partidas', `Hay una copia de seguridad del ${when} con ${b.archive.length} partida${b.archive.length === 1 ? '' : 's'}${b.game ? ' y una partida en curso' : ''}. ¿Quieres recuperarla?`, 'Recuperar', () => {
+    const n = mergeBackup(b); save(); render(); toast(n + ' partidas recuperadas');
+  });
+}
+
+const GROUP_TEXT = '⛀ Partidas de Damas. Para tenerlas en tu móvil: guarda este archivo, abre Damas → ⋮ → 📊 Clasificación y partidas → 📜 Partidas → «Recibir partidas del grupo» y elígelo. No se duplica nada.';
+async function exportBackup(forGroup) {
+  const d = new Date(), stamp = d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + '-' + pad2(d.getHours()) + pad2(d.getMinutes());
+  const name = (forGroup ? 'damas-partidas-' : 'damas-copia-') + stamp + '.json';
+  const data = backupJSON();
+  try {
+    if (isNative()) {
+      const { Filesystem, Share } = window.Capacitor.Plugins;
+      const r = await Filesystem.writeFile({ path: name, data, directory: 'CACHE', encoding: 'utf8' });
+      await Share.share({ title: 'Partidas de Damas', text: forGroup ? GROUP_TEXT : 'Copia de seguridad de Damas', files: [r.uri], dialogTitle: forGroup ? 'Enviar partidas al grupo' : 'Guardar copia en…' });
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+      a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      toast('Copia descargada');
+    }
+  } catch (e) {
+    if (!/cancel/i.test(String(e && e.message))) toast('No se pudo exportar la copia');
+  }
+}
+function importBackup() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'application/json,.json,text/plain,.pdn';
+  inp.onchange = () => {
+    const f = inp.files && inp.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      let b;
+      try { b = JSON.parse(rd.result); } catch (e) { b = null; }
+      if (!b && /\[\s*\w+\s+"|^\s*1\.\s*\S/m.test(String(rd.result))) { importPgnText(String(rd.result)); return; }
+      if (!validBackup(b)) { toast('Ese archivo no es una copia de Damas'); return; }
+      const have = new Set(S.archive.map(a => a.id));
+      const nuevas = b.archive.slice(0, MAX_ARCHIVE).map(a => cleanGame(a)).filter(a => a && !have.has(a.id));
+      const restoreGame = !S.game && !!cleanGame(b.game);
+      confirmBox('Importar copia', `Se añadirán ${nuevas.length} partida${nuevas.length === 1 ? '' : 's'} nueva${nuevas.length === 1 ? '' : 's'} al historial (las que ya tienes no se duplican)${restoreGame ? ' y se recuperará la partida que estaba en curso' : ''}.`, 'Importar', () => {
+        const n = mergeBackup(b);
+        save(); render(); toast(n + ' partidas importadas'); autoBackup(true); openArchive('partidas');
+      });
+    };
+    rd.readAsText(f);
+  };
+  inp.click();
+}
+
+/* ---------- Clasificación (Elo) ---------- */
+const ELO0 = 1200;
+const fmt1 = v => (Math.round(v * 10) / 10).toLocaleString('es-ES');
+const medal = i => ['🥇', '🥈', '🥉'][i] || (i + 1) + '.';
+// Partidas que cuentan: terminadas, no importadas de PDN, con al menos un jugador con nombre
+function ratedGames() {
+  return S.archive.filter(a => a.result && a.mode !== 'pgn' && !a.startFen && (a.moves || []).length >= 2).slice().sort((x, y) => (x.finished || x.created) - (y.finished || y.created));
+}
+// Recorre las partidas en orden y calcula el Elo de cada jugador (la máquina tiene un Elo fijo por nivel)
+function eloTable() {
+  const P = {};
+  const get = name => { const k = nkey(name); return P[k] || (P[k] = { key: k, name: name.trim(), elo: ELO0, peak: ELO0, pj: 0, g: 0, t: 0, p: 0, hist: [], games: [] }); };
+  for (const a of ratedGames()) {
+    const sides = [0, 1].map(c => {
+      if (a.mode === 'ai' && c !== a.human) return { machine: true, elo: (LEVELS[a.level] || LEVELS[3]).elo, level: a.level };
+      const n = c === 0 ? a.white : a.black;
+      return isPlaceholder(n) && a.mode === 'local' ? { anon: true, elo: ELO0 } : { p: get(n) };
+    });
+    if (sides.every(s => !s.p)) continue;
+    const r = [resultFor(a, 0), resultFor(a, 1)];
+    const elo = sides.map(s => s.p ? s.p.elo : s.elo);
+    sides.forEach((s, c) => {
+      if (!s.p) return;
+      const o = s.p, opp = sides[1 - c];
+      const E = 1 / (1 + Math.pow(10, (elo[1 - c] - elo[c]) / 400));
+      const K = o.pj < 10 ? 40 : 24;
+      const delta = opp.anon ? 0 : K * (r[c] - E);
+      o.elo += delta; o.pj++; if (r[c] === 1) o.g++; else if (r[c] === 0) o.p++; else o.t++;
+      o.peak = Math.max(o.peak, o.elo);
+      const oppName = opp.p ? opp.p.name : opp.machine ? 'Nivel ' + opp.level : '';
+      o.hist.push({ ts: a.finished || a.created, elo: o.elo });
+      o.games.push({ a, c, r: r[c], opp: opp.p ? opp.p.key : null, oppName, level: opp.machine ? opp.level : null, delta });
+    });
+  }
+  return Object.values(P).filter(o => o.pj).sort((x, y) => (y.elo - x.elo) || (y.pj - x.pj));
+}
+const pctPts = o => o.pj ? Math.round((o.g + o.t / 2) / o.pj * 100) : 0;
+function playerStats(key) {
+  const list = eloTable(), o = list.find(x => x.key === key);
+  if (!o) return null;
+  let best = 0, cur = 0; o.games.forEach(x => { cur = x.r === 1 ? cur + 1 : 0; best = Math.max(best, cur); });
+  const byColor = [0, 1].map(c => { const gs = o.games.filter(x => x.c === c); return { n: gs.length, pts: gs.reduce((s, x) => s + x.r, 0) }; });
+  const lv = {}; o.games.filter(x => x.level).forEach(x => { const v = lv[x.level] || (lv[x.level] = { g: 0, t: 0, p: 0 }); if (x.r === 1) v.g++; else if (x.r === 0) v.p++; else v.t++; });
+  const h2h = {}; o.games.filter(x => x.opp).forEach(x => { const h = h2h[x.opp] || (h2h[x.opp] = { name: x.oppName, g: 0, t: 0, p: 0 }); if (x.r === 1) h.g++; else if (x.r === 0) h.p++; else h.t++; });
+  const mates = o.games.filter(x => x.r === 1 && (x.a.reason === 'sinpiezas' || x.a.reason === 'bloqueo')).length;
+  const monthKey = ts => { const d = new Date(ts); return d.getFullYear() + '-' + pad2(d.getMonth() + 1); };
+  const mm = {}; o.hist.forEach(h => mm[monthKey(h.ts)] = h.elo);
+  const months = Object.keys(mm).sort().slice(-6).map(m => { const [y, n] = m.split('-').map(Number); return { label: new Date(y, n - 1, 1).toLocaleDateString('es-ES', { month: 'short' }).replace('.', ''), v: mm[m] }; });
+  return { o, rankPos: list.indexOf(o) + 1, best, cur, byColor, lv, h2h: Object.values(h2h).sort((a, b) => (b.g + b.t + b.p) - (a.g + a.t + a.p)).slice(0, 8), mates, months, since: o.games[0].a.finished || o.games[0].a.created };
+}
+function openPlayer(name, back) {
+  const st = playerStats(nkey(name));
+  if (!st) { toast('Aún no hay partidas terminadas de ' + name); return; }
+  const o = st.o;
+  const ini = o.name.split(/\s+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase() || o.name.slice(0, 2).toUpperCase();
+  const since = new Date(st.since).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }).replace('.', '');
+  const kpi = (l, v, sub) => `<div class="pf-kpi"><span>${l}</span><b>${v}${sub ? ` <small>${sub}</small>` : ''}</b></div>`;
+  const line = (ic, l, v) => `<div class="pf-line"><span>${ic} ${l}</span><b>${v}</b></div>`;
+  const gtp = v => `${v.g}G ${v.t}T ${v.p}P`;
+  const vals = st.months.map(m => m.v), lo = Math.min(...vals, ELO0) - 50, hi = Math.max(...vals, ELO0) + 10;
+  openModal(`
+    <div class="pf-head"><div class="pf-av">${esc(ini)}</div>
+      <div style="flex:1;min-width:0"><h3 style="margin:0">${esc(o.name)}</h3><div class="mut">${st.rankPos}º en la clasificación · desde ${esc(since)}</div></div>
+      <div style="text-align:right"><div class="pf-rating">${Math.round(o.elo)}</div><div class="mut" style="font-size:calc(11px * var(--fs, 1))">Elo</div></div></div>
+    <div class="pf-kpis">
+      ${kpi('Partidas', o.pj)}${kpi('Victorias', o.g, pctPts(o) + '% pts')}
+      ${kpi('Tablas', o.t)}${kpi('Derrotas', o.p)}
+    </div>
+    <div class="pf-t">Rachas y juego</div>
+    <div class="pf-box">
+      ${line('🏔', 'Elo más alto', Math.round(o.peak))}
+      ${line('🔥', 'Mejor racha', st.best + (st.best === 1 ? ' victoria' : ' victorias seguidas'))}
+      ${line('📈', 'Racha actual', st.cur ? st.cur + (st.cur === 1 ? ' victoria' : ' victorias') : '—')}
+      ${line('🧹', 'Victorias dejando al rival sin piezas o sin jugadas', st.mates)}
+      ${line('⚪', 'Con blancas', st.byColor[0].n ? Math.round(st.byColor[0].pts / st.byColor[0].n * 100) + '% de ' + st.byColor[0].n : '—')}
+      ${line('⚫', 'Con negras', st.byColor[1].n ? Math.round(st.byColor[1].pts / st.byColor[1].n * 100) + '% de ' + st.byColor[1].n : '—')}
+    </div>
+    ${Object.keys(st.lv).length ? `<div class="pf-t">Contra la máquina</div><div class="pf-box">${Object.keys(st.lv).sort().map(l => line('🤖', 'Nivel ' + l + ' · ' + LEVELS[l].name, gtp(st.lv[l]))).join('')}</div>` : ''}
+    ${st.h2h.length ? `<div class="pf-t">Cara a cara <small>(ganadas · tablas · perdidas)</small></div><div class="pf-box">` + st.h2h.map(h => { const n = h.g + h.t + h.p; return `
+      <div class="pf-h2h"><span>${esc(h.name)}</span><div class="pf-bar"><i style="width:${Math.round(h.g / n * 100)}%"></i><u style="width:${Math.round(h.t / n * 100)}%"></u></div><b>${h.g}·${h.t}·${h.p}</b></div>`; }).join('') + '</div>' : ''}
+    ${st.months.length > 1 ? `<div class="pf-t">Elo al final de cada mes</div><div class="pf-box"><div class="pf-months">` + st.months.map((m, i) => `
+      <div><small>${Math.round(m.v)}</small><i style="height:${Math.max(4, Math.round((m.v - lo) / (hi - lo) * 70))}px;${i === st.months.length - 1 ? 'background:var(--gold)' : ''}"></i><span>${esc(m.label)}</span></div>`).join('') + '</div></div>' : ''}
+    <button class="btn-ghost" id="pfShare" style="width:100%;margin-top:12px">📤 Compartir ficha como imagen</button>
+    <div class="acts"><button class="btn-gold" id="pfBack">${back ? '‹ Volver' : 'Cerrar'}</button></div>`);
+  $('#pfBack').onclick = () => back ? back() : closeModal();
+  $('#pfShare').onclick = () => shareImage(drawShareImage({
+    title: 'Ficha de ' + o.name, subtitle: st.rankPos + 'º en la clasificación · Elo ' + Math.round(o.elo),
+    cols: ['', 'Estadística', 'Valor'],
+    rows: [['⛀', 'Partidas', o.pj], ['🏆', 'Victorias', o.g], ['🤝', 'Tablas', o.t], ['😔', 'Derrotas', o.p], ['🏔', 'Elo más alto', Math.round(o.peak)], ['🔥', 'Mejor racha', st.best], ['🧹', 'Victorias en el tablero', st.mates]],
+    note: st.h2h.length ? 'Cara a cara: ' + st.h2h.slice(0, 3).map(h => h.name + ' ' + h.g + '·' + h.t + '·' + h.p).join('  ') : ''
+  }), 'damas-' + o.key.replace(/[^a-z0-9]+/g, '-') + '.png', 'Mis estadísticas de Damas ⛀');
+}
+function computeRecords() {
+  const list = eloTable(), games = ratedGames();
+  const recs = [];
+  if (!list.length) return recs;
+  const fd = ts => new Date(ts).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }).replace('.', '');
+  const peak = list.slice().sort((a, b) => b.peak - a.peak)[0];
+  recs.push({ ic: '🏔', t: 'Elo más alto', who: peak.name, val: Math.round(peak.peak) });
+  let streak = null; list.forEach(o => { let c = 0, b = 0; o.games.forEach(x => { c = x.r === 1 ? c + 1 : 0; b = Math.max(b, c); }); if (b > 1 && (!streak || b > streak.v)) streak = { who: o.name, v: b }; });
+  if (streak) recs.push({ ic: '🔥', t: 'Mejor racha de victorias', who: streak.who, val: streak.v + ' seguidas' });
+  const winnerName = a => a.result === '1-0' ? a.white : a.black;
+  const mates = games.filter(a => (a.reason === 'sinpiezas' || a.reason === 'bloqueo') && !(a.mode === 'ai' && resultFor(a, a.human) !== 1)).sort((x, y) => x.moves.length - y.moves.length);
+  if (mates.length) recs.push({ ic: '⚡', t: 'Victoria más rápida', who: winnerName(mates[0]), val: Math.ceil(mates[0].moves.length / 2) + ' jugadas', sub: fd(mates[0].finished || mates[0].created) });
+  const longest = games.slice().sort((x, y) => y.moves.length - x.moves.length)[0];
+  if (longest) recs.push({ ic: '⏳', t: 'Partida más larga', who: longest.white + ' – ' + longest.black, val: Math.ceil(longest.moves.length / 2) + ' jugadas', sub: fd(longest.finished || longest.created) });
+  let beat = null; games.filter(a => a.mode === 'ai' && resultFor(a, a.human) === 1).forEach(a => { if (!beat || a.level > beat.level) beat = { who: a.human === 0 ? a.white : a.black, level: a.level, ts: a.finished || a.created }; });
+  if (beat) recs.push({ ic: '🤖', t: 'Nivel más alto vencido', who: beat.who, val: 'Nivel ' + beat.level, sub: fd(beat.ts) });
+  const most = list.slice().sort((a, b) => b.pj - a.pj)[0];
+  recs.push({ ic: '⛀', t: 'Más partidas jugadas', who: most.name, val: most.pj });
+  const mw = list.slice().sort((a, b) => b.g - a.g)[0];
+  if (mw.g) recs.push({ ic: '🏆', t: 'Más victorias', who: mw.name, val: mw.g });
+  const solved = Object.keys(S.solved || {}).length;
+  if (solved) recs.push({ ic: '🧩', t: 'Problemas resueltos', who: 'En este móvil' + (S.pzElo ? ' · Elo de problemas ' + S.pzElo : ''), val: solved + ' de ' + PZ.length });
+  return recs;
+}
+let AV = { tab: 'ranking' };
+function openArchive(tab) {
+  if (typeof tab === 'string') AV.tab = tab;
+  const tabs = `<div class="kinds" style="margin:0 0 12px">${[['ranking', '🏆 Clasificación'], ['records', '🏅 Récords'], ['partidas', '📜 Partidas']].map(([k, l]) => `<button data-tab="${k}" class="${AV.tab === k ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+  let body = '';
+  const SH = {};
+  if (!S.archive.length) {
+    body = `<div class="empty">Aún no hay partidas guardadas.<br>Se guardan solas al terminar cada partida.</div>`;
+  } else if (AV.tab === 'ranking') {
+    const list = eloTable();
+    SH.rank = { file: 'damas-clasificacion.png', text: 'Clasificación de Damas 🏆', img: { title: 'Clasificación', subtitle: ratedGames().length + ' partidas · Elo',
+      cols: ['#', 'Jugador', 'Elo', 'PJ', 'G', '%'], rows: list.slice(0, 12).map((o, i) => [medal(i), o.name, Math.round(o.elo), o.pj, o.g, pctPts(o) + '%']),
+      note: 'Elo inicial 1200. La máquina cuenta con un Elo fijo por nivel.' } };
+    body = list.length ? `<div class="tbl-wrap"><table><thead><tr><th>#</th><th style="text-align:left">Jugador</th><th>Elo</th><th>PJ</th><th>G</th><th>T</th><th>P</th><th>% pts</th></tr></thead><tbody>` +
+        list.map((o, i) => `<tr data-player="${esc(o.name)}" style="cursor:pointer"><td>${medal(i)}</td><td style="text-align:left;font-weight:700;text-decoration:underline;text-decoration-color:var(--line)">${esc(o.name)}${o.pj < 5 ? ' <small class="mut">*</small>' : ''}</td><td><b style="color:var(--gold);font-size:calc(16px * var(--fs, 1))">${Math.round(o.elo)}</b></td><td>${o.pj}</td><td>${o.g}</td><td>${o.t}</td><td>${o.p}</td><td>${pctPts(o)}%</td></tr>`).join('') +
+        `</tbody></table></div>
+        <div class="mut" style="margin-top:6px">Toca un jugador para ver su ficha.${list.some(o => o.pj < 5) ? ' * Menos de 5 partidas: Elo provisional.' : ''}</div>
+        <button class="btn-ghost" data-share="rank" style="width:100%;margin-top:10px">📤 Compartir clasificación como imagen</button>
+        <details class="sec" style="margin-top:10px"><summary style="cursor:pointer;font-weight:700">¿Cómo se calcula?</summary>
+          <div class="mut" style="margin-top:8px;line-height:1.5">
+          • Todos empiezan con <b>1200</b> puntos de Elo. Al ganar a alguien con más Elo se suben más puntos que al ganar a alguien con menos; al perder, al revés.<br>
+          • La máquina cuenta con un Elo fijo por nivel (${LEVELS.slice(1).map((L, i) => (i + 1) + ': ' + L.elo).join(' · ')}). Son valores aproximados para comparar, no oficiales.<br>
+          • En las 10 primeras partidas el Elo se mueve más deprisa (K = 40) y después se estabiliza (K = 24).<br>
+          • Cuentan las partidas terminadas contra la máquina o entre jugadores con nombre. No cuentan las importadas de PDN ni las que empiezan desde una posición («Jugar desde aquí»).<br>
+          • PJ = partidas jugadas · G = ganadas · T = tablas · P = perdidas · % pts = puntos sobre el máximo.</div></details>`
+        : '<div class="empty">Aún no hay partidas terminadas que cuenten.</div>';
+  } else if (AV.tab === 'records') {
+    const recs = computeRecords();
+    SH.records = { file: 'damas-records.png', text: 'Récords de Damas 🏅', img: { title: 'Récords', subtitle: ratedGames().length + ' partidas jugadas',
+      cols: ['', 'Récord', 'Valor'], rows: recs.slice(0, 12).map(r => [r.ic, r.t + ': ' + r.who, r.val]), note: '' } };
+    body = recs.length ? recs.map(r => `<div class="hrow"><div class="top"><div style="font-size:calc(24px * var(--fs, 1));width:34px;text-align:center">${r.ic}</div>
+        <div class="n">${esc(r.t)}<small>${esc(r.who)}${r.sub ? ' · ' + esc(r.sub) : ''}</small></div>
+        <b style="color:var(--gold);white-space:nowrap">${esc(String(r.val))}</b></div></div>`).join('') +
+      '<button class="btn-ghost" data-share="records" style="width:100%;margin-top:6px">📤 Compartir récords como imagen</button>'
+      : '<div class="empty">Aún no hay partidas terminadas.</div>';
+  } else {
+    body = archiveHtml(S.archive.length) + `<div class="mut" style="margin:6px 0">Toca una partida para revisarla o analizarla. Caben hasta ${MAX_ARCHIVE}; al superarlas se borra la más antigua.</div>` +
+      (isNative() ? `<div class="hrow mut" style="line-height:1.45">💾 <b>Copia automática:</b> ${S.lastAutoBackup ? 'última el ' + new Date(S.lastAutoBackup).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'se hará al terminar la próxima partida'}.
+        Se guarda en la app (Android la incluye en tu copia de Google)${S.autoBackupDocs ? ' y en la carpeta <b>Documentos/Damas</b> del móvil' : ''}.
+        Para pasar las partidas a otro móvil, usa también «Guardar copia».</div>` : '');
+  }
+  openModal(`<h3>📊 Clasificación y partidas</h3><div class="sub">${S.archive.length} partida${S.archive.length === 1 ? '' : 's'} guardada${S.archive.length === 1 ? '' : 's'}.</div>
+    ${S.archive.length ? tabs : ''}${body}
+    ${AV.tab === 'partidas' || !S.archive.length ? `<div class="pf-t" style="margin-top:14px">⛀ PDN</div>
+      <div class="mut" style="margin-bottom:8px;line-height:1.45">El formato de partidas que usan las apps y webs de damas.</div>
+      <div class="menu">${S.archive.some(a => a.result) ? '<button id="aPgnE">📤 Exportar todas en PDN</button>' : ''}<button id="aPgnI">📥 Importar partidas PDN</button></div>
+      <div class="pf-t" style="margin-top:14px">👥 Jugar en grupo</div>
+      <div class="mut" style="margin-bottom:8px;line-height:1.45">Para que todos tengáis el mismo historial y clasificación: uno envía sus partidas al grupo y los demás las reciben. Las que ya tengas no se duplican.</div>
+      <div class="menu">${S.archive.length ? '<button id="aGrp" class="btn-gold">📤 Enviar mis partidas al grupo</button>' : ''}<button id="aImp">📥 Recibir partidas del grupo (o una copia)</button>
+      ${S.archive.length ? '<button id="aExp">💾 Guardar copia de seguridad</button>' : ''}</div>` : ''}
+    <div class="acts"><button class="btn-gold" id="aC">Cerrar</button></div>`);
+  $('#aC').onclick = closeModal;
+  const on = (id, fn) => { const el = $('#' + id); if (el) el.onclick = fn; };
+  on('aExp', () => exportBackup(false)); on('aGrp', () => exportBackup(true)); on('aImp', importBackup);
+  on('aPgnE', exportAllPgn); on('aPgnI', importPgn);
+  document.querySelectorAll('#modal [data-tab]').forEach(b => b.onclick = () => openArchive(b.dataset.tab));
+  document.querySelectorAll('#modal [data-player]').forEach(tr => tr.onclick = () => openPlayer(tr.dataset.player, () => openArchive()));
+  document.querySelectorAll('#modal [data-share]').forEach(b => b.onclick = () => { const d = SH[b.dataset.share]; if (d) shareImage(drawShareImage(d.img), d.file, d.text); });
+  document.querySelectorAll('#modal [data-arch]').forEach(el => el.onclick = () => openGameReview(S.archive[+el.dataset.arch], 'archive'));
+}
+
+/* ---------- Menú ---------- */
+$('#menuBtn').onclick = () => {
+  const g = S.game, live = g && !g.result && !REVIEW && !S.pz && !S.drill && !EDITOR;
+  openModal(`<h3>Menú</h3><div class="menu">
+    ${live ? `<button id="mPgn">📋 Compartir la partida (PDN)</button><button id="mLeave">🚪 Salir de la partida</button>` : ''}
+    ${g && g.result && !REVIEW && !S.pz ? '<button id="mNew" class="btn-gold">✚ Nueva partida</button>' : ''}
+    <button id="mArch">📊 Clasificación y partidas</button>
+    ${S.pz || S.drill || (S.draft.mode === 'puzzles' && !g) ? '' : '<button id="mPz">🧩 Problemas y repaso de errores</button>'}
+    ${live || EDITOR ? '' : '<button id="mEditor">✏️ Editor de posiciones</button>'}
+    ${isIOS() && !isStandalone() && !isNative() ? '<button id="mIOS" class="btn-gold">📲 Instalar en el iPhone</button>' : ''}
+    <button id="mShareApp">📲 Compartir la app</button>
+    <button id="mRoster">👥 Jugadores habituales</button>
+    ${isPlay() || !isNative() ? '' : hasUpd() ? `<button id="mUpd" class="btn-gold">🎉 Actualizar a v${esc(S.updAvail.v)} (nueva)</button>` : '<button id="mUpd">🔄 Buscar actualizaciones</button>'}
+    <button id="mTheme">🎨 Colores, tablero y sonido</button>
+    <button id="mHelp">❓ Cómo se usa</button>
+    <button id="mGameRules">📖 Reglas de las damas</button>
+    <button id="mAbout">ℹ️ Acerca de</button>
+    ${g ? '' : '<button id="mWipe">🗑 Borrar datos…</button>'}
+    <button class="btn-ghost" id="mClose">Cerrar</button></div>`);
+  const on = (id, fn) => { const el = $('#' + id); if (el) el.onclick = fn; };
+  on('mClose', closeModal);
+  on('mHelp', () => openWelcome(0));
+  on('mGameRules', openGameRules);
+  on('mWipe', openWipe);
+  on('mTheme', openThemes);
+  on('mUpd', () => hasUpd() ? openUpdAvail() : checkUpdates(true));
+  on('mRoster', openRoster);
+  on('mShareApp', () => { closeModal(); shareApp(); });
+  on('mIOS', () => openIOSInstall(true));
+  on('mArch', () => openArchive('ranking'));
+  on('mPgn', () => sharePgn(g));
+  on('mEditor', () => { REVIEW = null; openEditor(CH.START_FEN, 'home'); });
+  on('mNew', () => { closeModal(); S.game = null; render(); });
+  on('mPz', () => { closeModal(); REVIEW = null; S.drill = null; if (S.game && S.game.result) S.game = null; S.draft.mode = 'puzzles'; if (S.game) { toast('Termina o sal de la partida para ir a los problemas'); return; } render(); });
+  on('mLeave', () => S.game && S.game.mode === 'online' ? leaveOnline() : openLeave());
+  on('mAbout', () => {
+    openModal(`<h3>Damas</h3>
+      <div class="sub">v${APP_VERSION}<br>© 2026 IT Canarias. Todos los derechos reservados.<br>itcanarias.com<br><br>Motor de juego, piezas y problemas propios de IT Canarias.</div>
+      <details class="hrow" style="margin-bottom:10px"><summary style="cursor:pointer;font-weight:700">🔒 Privacidad</summary>
+        <div class="mut" style="margin-top:8px;line-height:1.5">
+        • Tus partidas, jugadores y ajustes se guardan <b>solo en este móvil</b>. No hay cuentas ni registro.<br>
+        • La app <b>no recoge ningún dato personal</b> ni de uso, y no lleva anuncios ni rastreadores.<br>
+        ${!isNative() ? '• Esta es la <b>versión web</b>: se carga desde GitHub Pages (csuarezsm.github.io) y se actualiza sola al abrirla, sin enviar ningún dato tuyo. Instalada en la pantalla de inicio funciona sin conexión.<br>' : isPlay() ? '• La app <b>no necesita internet</b> para funcionar ni envía ningún dato. Las actualizaciones llegan por Google Play.<br>' : '• Solo se conecta a internet para <b>buscar actualizaciones</b> en GitHub (no envía ningún dato tuyo; como cualquier web, GitHub ve la dirección IP de la conexión) y, si tú lo pulsas, para abrir PayPal o compartir.<br>'}
+        ${ONLINE_URL ? '• Solo si juegas <b>en línea</b>, se envían al servidor de juegos de IT Canarias el nombre que pones y tus jugadas, para la partida. No se guardan.<br>' : ''}
+        • La copia de seguridad automática se queda en el móvil; Android puede incluirla en tu copia de Google si la tienes activada.<br>
+        • Responsable: IT Canarias · itcanarias.com</div></details>
+      ${isPlay() ? '' : `<div class="donate">
+        <div class="dt">💛 Apoya el desarrollo de esta app</div>
+        <div class="dd">Es gratis y sin anuncios. Con 1&nbsp;€ nos ayudas a seguir mejorándola y a crear nuevas apps como esta. ¡Gracias!</div>
+        <button class="btn-gold" id="donate">Apoyar con 1 € (PayPal)</button>
+      </div>`}
+      <div class="acts"><button class="btn-ghost" id="ok">Cerrar</button></div>`);
+    $('#ok').onclick = closeModal;
+    if ($('#donate')) $('#donate').onclick = () => openExternal(DONATE_URL);
+  });
+};
+
+function openOnlineLeave() { leaveOnline(); }
+function openLeave() {
+  openModal(`<h3>🚪 Salir de la partida</h3><div class="sub">La partida no está terminada.</div><div class="menu">
+    <button id="lvSave">💾 Guardarla sin terminar<br><small class="mut">Queda en el historial para revisarla; no cuenta para el Elo</small></button>
+    <button id="lvDel" class="btn-red">Descartarla</button></div>
+    <div class="acts"><button class="btn-ghost" id="lvNo">Seguir jugando</button></div>`);
+  $('#lvNo').onclick = closeModal;
+  $('#lvSave').onclick = () => { closeModal(); THINK = null; Engine.reset(); pauseClock(); if (S.game.moves.length) archiveUpsert(S.game); S.game = null; render(); toast('Partida guardada'); };
+  $('#lvDel').onclick = () => { closeModal(); THINK = null; Engine.reset(); S.game = null; render(); toast('Partida descartada'); };
+}
+/* Botón «atrás» de Android: cierra lo que esté abierto o vuelve a la pantalla anterior.
+   Devuelve false si ya no hay nada que cerrar (entonces la app se va al fondo). */
+function goBack() {
+  if (!$('#modal').classList.contains('hidden')) { closeModal(); return true; }
+  if (REVIEW) { closeReview(); return true; }
+  if (EDITOR) { closeEditor(); return true; }
+  if (S.drill) { S.drill = null; PZ_MSG = ''; HINT = null; S.draft.mode = 'puzzles'; render(); return true; }
+  if (S.pz) { S.pz = null; PZ_MSG = ''; HINT = null; S.draft.mode = 'puzzles'; render(); return true; }
+  if (S.game && VIEW_PLY != null) { VIEW_PLY = null; render(); return true; }
+  if (S.game && S.game.mode === 'online') { if (S.game.result || !S.game.ready) leaveOnline(); else openOnlineLeave(); return true; }
+  if (S.game && S.game.result) { S.game = null; render(); return true; }
+  if (S.game) { if (S.game.moves.length) openLeave(); else { THINK = null; Engine.reset(); S.game = null; render(); } return true; }
+  if (S.draft.mode !== 'ai') { S.draft.mode = 'ai'; render(); return true; }
+  return false;
+}
+try {
+  const AppP = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+  if (AppP && AppP.addListener) AppP.addListener('backButton', () => { if (!goBack()) { if (AppP.minimizeApp) AppP.minimizeApp().catch(() => AppP.exitApp()); else AppP.exitApp(); } });
+} catch (e) {}
+
+/* ================= Arranque ================= */
+applyTheme(S.theme);
+applyFont();
+refreshUpdBadge();
+setTimeout(autoCheckUpdates, 2500);
+// primero, si se ha reinstalado, ofrecer recuperar la copia; si no, la bienvenida a quien empieza
+setTimeout(async () => {
+  try { await offerRestore(); } catch (e) {}
+  if (!S.onboarded) {
+    if (S.archive.length || S.game) { S.onboarded = true; save(); }
+    else if ($('#modal').classList.contains('hidden')) openWelcome(0);
+  }
+  if ($('#modal').classList.contains('hidden')) openIOSInstall(false);
+}, 400);
+// En la versión web, pedir al navegador que no borre los datos de la app
+try { if (!isNative() && navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') autoBackup(false); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') autoCheckUpdates(); });
+if (S.game && S.game.clock && S.game.tick) { S.game.paused = true; S.game.tick = null; }   // el tiempo con la app cerrada no cuenta
+if (S.game) resumeClock();
+render();
+resumeOnline();
+if (S.game) keepAwake();
+if ('serviceWorker' in navigator && isNative()) {
+  navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => {});
+  if (window.caches) caches.keys().then(ks => ks.forEach(k => caches.delete(k))).catch(() => {});
+} else if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>

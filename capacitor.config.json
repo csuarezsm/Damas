@@ -1,0 +1,9 @@
+{
+  "appId": "com.itcanarias.damas",
+  "appName": "Damas",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#22090e",
+    "adjustMarginsForEdgeToEdge": "auto"
+  }
+}

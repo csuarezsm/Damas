@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Damas</string>
+    <string name="title_activity_main">Damas</string>
+    <string name="package_name">com.itcanarias.damas</string>
+    <string name="custom_url_scheme">com.itcanarias.damas</string>
+</resources>

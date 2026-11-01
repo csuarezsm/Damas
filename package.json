@@ -1,0 +1,28 @@
+{
+  "name": "damas",
+  "version": "1.0.0",
+  "private": true,
+  "author": "IT Canarias",
+  "license": "UNLICENSED",
+  "description": "Damas españolas: contra la máquina, dos jugadores, en línea y problemas (IT Canarias)",
+  "scripts": {
+    "sync": "npx cap sync android",
+    "open": "npx cap open android",
+    "test": "node tests/app.test.mjs",
+    "web": "bash tools/publicar-web.sh",
+    "icons": "npx @capacitor/assets generate --android --iconBackgroundColor '#3a141b' --splashBackgroundColor '#22090e'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.1.2",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/filesystem": "^7.1.9",
+    "@capacitor/share": "^7.0.4"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.0.0",
+    "playwright": "^1.63.0",
+    "ws": "^8.22.1"
+  }
+}

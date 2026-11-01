@@ -34,26 +34,27 @@ const Sound = (() => {
     const len = Math.floor(c.sampleRate * dur), buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 4);
     const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
-    f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 1.2; g.gain.value = vol;
-    src.buffer = buf; src.connect(f); f.connect(g); g.connect(c.destination); src.start(t);
+    f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 0.8; g.gain.value = vol;
+    src.buffer = buf; src.connect(f); f.connect(g); g.connect((window.AudioSuave ? AudioSuave.salida(c) : c.destination)); src.start(t);
   }
   function tone(c, t, freq, dur, vol, type) {
     const o = c.createOscillator(), g = c.createGain();
     o.type = type || 'sine'; o.frequency.value = freq;
-    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + 0.02);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect((window.AudioSuave ? AudioSuave.salida(c) : c.destination)); o.start(t); o.stop(t + dur + 0.02);
   }
   function play(kind) {
     if (S.sound === false) return;
     const c = ac(); if (!c) return;
     const t = c.currentTime + 0.01;
     try {
-      if (kind === 'move') knock(c, t, 1500, 0.9, 0.06);
-      else if (kind === 'capture') { knock(c, t, 900, 1.2, 0.09); knock(c, t + 0.05, 1700, 0.6, 0.05); }
-      else if (kind === 'check') { knock(c, t, 1400, 0.8, 0.05); tone(c, t + 0.03, 880, 0.18, 0.12, 'triangle'); }
-      else if (kind === 'end') { [523, 659, 784].forEach((f, i) => tone(c, t + i * 0.11, f, 0.45, 0.13, 'triangle')); }
-      else if (kind === 'ok') { [659, 988].forEach((f, i) => tone(c, t + i * 0.1, f, 0.3, 0.12, 'sine')); }
-      else if (kind === 'bad') tone(c, t, 180, 0.25, 0.14, 'square');
+      // suaves: golpes de madera graves y notas puras
+      if (kind === 'move') knock(c, t, 1000, 0.5, 0.05);
+      else if (kind === 'capture') { knock(c, t, 650, 0.7, 0.08); knock(c, t + 0.05, 1100, 0.3, 0.04); }
+      else if (kind === 'check') { knock(c, t, 1000, 0.45, 0.05); tone(c, t + 0.03, 659, 0.2, 0.06, 'sine'); }
+      else if (kind === 'end') { [523, 659, 784].forEach((f, i) => tone(c, t + i * 0.13, f, 0.5, 0.07, 'sine')); }
+      else if (kind === 'ok') { [659, 880].forEach((f, i) => tone(c, t + i * 0.11, f, 0.3, 0.07, 'sine')); }
+      else if (kind === 'bad') tone(c, t, 220, 0.22, 0.06, 'sine');
     } catch (e) {}
   }
   // tipo de sonido para una jugada: comer, coronar o mover

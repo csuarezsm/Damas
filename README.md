@@ -2,7 +2,7 @@
 
 Damas españolas para Android e iPhone: contra la máquina, dos jugadores en el mismo móvil, en línea y problemas de «juegan y ganan».
 App Capacitor + web (`www/`). Todos los datos se guardan en el móvil; solo el juego en línea usa el servidor de juegos (nombre y jugadas, sin guardarlos).
-Paquete: `com.itcanarias.damas` · versión 1.2.0
+Paquete: `com.itcanarias.damas` · versión 1.2.1
 
 **iPhone y navegadores**: la misma app se publica como versión web instalable en https://csuarezsm.github.io/Damas/app/ (GitHub Pages, carpeta `docs/app`, copia de `www/`). En Safari: Compartir → «Añadir a pantalla de inicio». Tras cambiar `www/`, ejecuta `npm run web` antes del commit: las pruebas y el workflow comprueban que `docs/app` está al día. La página de descarga (https://csuarezsm.github.io/Damas/) ofrece Android e iPhone, y el mensaje de «Compartir la app» enlaza a ella.
 

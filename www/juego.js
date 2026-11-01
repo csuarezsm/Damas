@@ -1483,7 +1483,14 @@ window.unirseDesdeEnlace = function (codigo) {
     o.code = codigo; save();
     if (!cleanName(S.draft.ai.name)) {
       render();
-      setTimeout(() => { const n = $('#oName'); if (n) n.focus(); toast('Escribe tu nombre y pulsa Entrar'); }, 80);
+      // sin nombre todavía: se pide en una ventana y se entra directamente
+      openModal(`<h3>🎟 Partida ${esc(codigo)}</h3><div class="sub">Te han invitado. Escribe tu nombre para entrar.</div>
+        <input id="invName" maxlength="18" placeholder="Tu nombre" autocomplete="off" style="width:100%">
+        <div class="acts"><button class="btn-ghost" id="invNo">Cancelar</button><button class="btn-gold" id="invOk">Entrar</button></div>`);
+      const n = $('#invName'); setTimeout(() => n && n.focus(), 50);
+      const ok = () => { const v = cleanName(n.value); if (!v) { toast('Escribe tu nombre'); n.focus(); return; } S.draft.ai.name = v; save(); closeModal(); go(); };
+      $('#invOk').onclick = ok; n.onkeydown = e => { if (e.key === 'Enter') ok(); };
+      $('#invNo').onclick = closeModal;
       return;
     }
     ONLINE.err = ''; ONLINE.busy = true; remember(myOnlineName());

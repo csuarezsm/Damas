@@ -309,10 +309,14 @@ pre.pgn{background:var(--bg);border-radius:10px;padding:10px;max-height:28vh;ove
 <script src="juego.js"></script>
 <script>window.APP_ID = 'damas';</script>
 <script src="i18n-en.js"></script>
+<script src="i18n-fr.js"></script>
+<script src="i18n-de.js"></script>
+<script src="i18n-it.js"></script>
 <script src="idioma.js"></script>
 <script src="masjuegos.js"></script>
 <script src="turno.js"></script>
 <script src="contador.js"></script>
+<script src="invitacion.js"></script>
 <script>
 'use strict';
 /* ================= Estado y persistencia ================= */
@@ -373,7 +377,7 @@ function openThemes() {
   AvisoTurno.enlazar();
 }
 
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 const REPO = 'csuarezsm/Damas';
 const MAX_ARCHIVE = 500;
 const uid = () => Math.random().toString(36).slice(2, 10);

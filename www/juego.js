@@ -2,6 +2,7 @@
    © 2026 IT Canarias. Todos los derechos reservados. */
 'use strict';
 const CH = window.Damas, MO = window.Motor;
+const BOT_IDEAS = ['Pancho', 'Chano', 'Candelaria', 'Tomasa', 'Juanillo', 'Nieves', 'Pepito', 'Carmela', 'Domingo', 'Fefa', 'Agustín', 'Chona', 'Ramón', 'Pino', 'Chicho', 'Luci'];
 const LEVELS = MO.LEVELS;
 const LEVEL_DESC = ['', 'Para aprender a mover. Se equivoca a menudo.', 'Ve las capturas sencillas, pero se despista.', 'Juega con algo de cabeza.', 'Calcula varias jugadas, con algún despiste.', 'Piensa rápido y casi no regala nada.', 'Calcula muy lejos: un rival duro.'];
 const CLOCKS = [['', 'Sin reloj'], ['3+2', '3+2'], ['5+0', '5+0'], ['10+5', '10+5'], ['15+10', '15+10'], ['custom', 'Otro']];
@@ -315,6 +316,8 @@ function renderSetup() {
       <datalist id="rosterList">${S.roster.map(n => `<option value="${esc(n)}">`).join('')}</datalist>
       <div class="mut" style="margin-top:6px">Con tu nombre, las partidas cuentan para tu Elo en la clasificación.</div></div>
       <div class="sec"><h2>Juegas con</h2><div class="kinds">${[['0', Piezas.piece(1, 0) + 'Blancas'], ['1', Piezas.piece(1, 1) + 'Negras'], ['r', '🎲 Al azar']].map(([k, l]) => `<button class="colbtn ${String(A2.color) === k ? 'on' : ''}" data-acolor="${k}">${l}</button>`).join('')}</div></div>
+      <div class="sec"><h2>Nombre de la máquina</h2><div class="row" style="gap:8px"><input type="text" maxlength="16" id="aBot" placeholder="${esc(levelLabel(A2.level).replace('🤖 ', ''))}" value="${esc(A2.bot || '')}" autocomplete="off" style="flex:1;min-width:0"><button class="closebtn" id="aBotDice" style="flex:0 0 auto" aria-label="Nombre al azar">🎲</button></div>
+        <div class="mut" style="margin-top:6px">Ponle un nombre o pulsa 🎲. Si lo dejas vacío, se llama por su nivel.</div></div>
       <div class="sec"><h2>Nivel</h2><div class="levels">${LEVELS.slice(1).map((L, i) => `<button class="lvl ${A2.level === i + 1 ? 'on' : ''}" data-alevel="${i + 1}"><b>${i + 1}</b><span>${esc(L.name)}<em>${esc(LEVEL_DESC[i + 1])}</em></span><small>≈${L.elo}</small></button>`).join('')}</div></div>
       <div class="sec"><h2>Reloj</h2>${clockFields(A2, 'a')}</div>
       <div class="sec"><h2>Ayuda</h2><label class="f"><span>Modo aprendizaje<em>Botón de pista y aviso cuando una jugada pierde material (puedes deshacerla o seguir)</em></span><input type="checkbox" class="tg" id="aLearn" ${A2.learn ? 'checked' : ''}></label></div>`;
@@ -341,6 +344,7 @@ function renderSetup() {
     $('#lSwap').onclick = () => { syncDraft(); const L = d.local; [L.white, L.black] = [L.black, L.white]; render(); };
   } else {
     document.querySelectorAll('[data-achip]').forEach(b => b.onclick = () => { syncDraft(); d.ai.name = nkey(d.ai.name) === nkey(b.dataset.achip) ? '' : b.dataset.achip; render(); });
+    const bd = $('#aBotDice'); if (bd) bd.onclick = () => { syncDraft(); const used = new Set([nkey(d.ai.name), nkey(d.ai.bot)]); const free = BOT_IDEAS.filter(n => !used.has(nkey(n))); d.ai.bot = free[Math.floor(Math.random() * free.length)] || ''; save(); render(); };
     document.querySelectorAll('[data-acolor]').forEach(b => b.onclick = () => { syncDraft(); d.ai.color = b.dataset.acolor === 'r' ? 'r' : +b.dataset.acolor; render(); });
     document.querySelectorAll('[data-alevel]').forEach(b => b.onclick = () => { syncDraft(); d.ai.level = +b.dataset.alevel; render(); });
   }
@@ -356,6 +360,7 @@ function syncDraft() {
     if (v('lcMin') != null) { d.local.cMin = v('lcMin'); d.local.cInc = v('lcInc'); }
   } else if (d.mode === 'ai') {
     if (v('aName') != null) d.ai.name = v('aName');
+    if (v('aBot') != null) d.ai.bot = cleanName(v('aBot')).replace(/^🤖\s*/, '');
     if (ck('aLearn') != null) d.ai.learn = ck('aLearn');
     if (v('acMin') != null) { d.ai.cMin = v('acMin'); d.ai.cInc = v('acInc'); }
   }
@@ -374,12 +379,13 @@ function startGame(o) {
     } else {
       const A2 = d.ai, name = canonName(A2.name, 'Tú');
       const human = A2.color === 'r' ? (Math.random() < 0.5 ? 0 : 1) : (A2.color ? 1 : 0);
-      o = { mode: 'ai', human, level: A2.level, name, clock: parseClock(A2.clock, A2.cMin, A2.cInc), learn: !!A2.learn };
+      o = { mode: 'ai', human, level: A2.level, name, bot: cleanName(A2.bot || '').replace(/^🤖\s*/, ''), clock: parseClock(A2.clock, A2.cMin, A2.cInc), learn: !!A2.learn };
       remember(name);
     }
   }
   const g = { id: uid(), created: Date.now(), mode: o.mode, moves: [], startFen: o.startFen || null, clock: o.clock || null, result: null, reason: '', undos: 0, hints: 0 };
-  if (o.mode === 'ai') Object.assign(g, { human: o.human, level: o.level, learn: !!o.learn, white: o.human === 0 ? o.name : levelLabel(o.level), black: o.human === 1 ? o.name : levelLabel(o.level) });
+  const botLabel = o.bot ? '🤖 ' + o.bot : levelLabel(o.level);
+  if (o.mode === 'ai') Object.assign(g, { human: o.human, level: o.level, learn: !!o.learn, bot: o.bot || undefined, white: o.human === 0 ? o.name : botLabel, black: o.human === 1 ? o.name : botLabel });
   else Object.assign(g, { white: o.white, black: o.black, flip: !!o.flip });
   if (g.clock) { g.times = [g.clock.base, g.clock.base]; g.tick = null; }
   S.game = g; REVIEW = null; S.pz = null; S.drill = null; BS.sel = null; VIEW_PLY = null; HINT = null; LEARN_WAIT = null;
@@ -387,7 +393,7 @@ function startGame(o) {
 }
 function rematch() {
   const g = S.game; if (!g) return;
-  if (g.mode === 'ai') startGame({ mode: 'ai', human: 1 - g.human, level: g.level, name: g.human === 0 ? g.white : g.black, clock: g.clock, learn: g.learn, startFen: g.startFen });
+  if (g.mode === 'ai') startGame({ mode: 'ai', human: 1 - g.human, level: g.level, name: g.human === 0 ? g.white : g.black, bot: g.bot, clock: g.clock, learn: g.learn, startFen: g.startFen });
   else startGame({ mode: 'local', white: g.black, black: g.white, clock: g.clock, flip: g.flip, startFen: g.startFen });
 }
 
@@ -453,6 +459,7 @@ function statusText(g, R) {
 function renderGame() {
   const g = S.game;
   const R = gstate(g);
+  if (g.mode === 'ai') AvisoTurno.local(!g.result && R.pos.turn === g.human, g.id + ':' + g.moves.length);   // aviso de que te toca (se quita en ajustes)
   const viewing = VIEW_PLY != null && VIEW_PLY < g.moves.length;
   const V = viewing ? CH.replay(g.moves.slice(0, VIEW_PLY), g.startFen) : null;
   const pos = viewing ? V.pos : R.pos;
@@ -1440,7 +1447,7 @@ function onlineActs(g) {
 const jugadaOnline = a => Online.send({ t: 'jugada', a });
 function bindOnlineGame(g) {
   const on = (id, fn) => { const el = $('#' + id); if (el) el.onclick = fn; };
-  on('olShare', () => shareText(`⛀ ¿Echamos una partida de damas?\nAbre la app Damas → 🌐 En línea → Unirse y escribe el código: *${g.room}*\n\n¿No tienes la app? Es gratis, para Android e iPhone:\n${isPlay() ? '🤖 Android: ' + PLAY_URL + '\n🍏 iPhone: ' + WEB_URL : DESCARGA_URL}`, 'Partida de damas'));
+  on('olShare', () => shareText(Invitacion.texto('⛀', 'Damas', g.room), 'Partida de damas'));
   on('olDraw', () => jugadaOnline({ tipo: 'tablas' }));
   on('olDrawYes', () => jugadaOnline({ tipo: 'tablas' }));
   on('olDrawNo', () => jugadaOnline({ tipo: 'rechazar' }));
@@ -1466,3 +1473,32 @@ function onlineMove(g, uci) {
 }
 // Al abrir la app con una partida en línea a medias, se vuelve a la sala (el «hola» con la ficha la recupera)
 function resumeOnline() { const g = S.game; if (ONLINE_URL && g && g.mode === 'online' && !g.result) { ONLINE.want = true; Online.connect(); } }
+
+/* ---------- Invitación con enlace: entrar directamente en la sala ---------- */
+window.unirseDesdeEnlace = function (codigo) {
+  const go = () => {
+    REVIEW = null; EDITOR = null; S.pz = null; S.drill = null;
+    S.draft.mode = 'online';
+    const o = S.draft.online || (S.draft.online = { color: 'r', clock: '10+5', cMin: 10, cInc: 0, code: '' });
+    o.code = codigo; save();
+    if (!cleanName(S.draft.ai.name)) {
+      render();
+      setTimeout(() => { const n = $('#oName'); if (n) n.focus(); toast('Escribe tu nombre y pulsa Entrar'); }, 80);
+      return;
+    }
+    ONLINE.err = ''; ONLINE.busy = true; remember(myOnlineName());
+    Online.send({ t: 'unirse', codigo, nombre: myOnlineName() });
+    render(); toast('Entrando en la partida ' + codigo + '…');
+  };
+  const g = S.game;
+  if (g && g.mode === 'online' && g.room === codigo) { render(); return; }
+  if (g && g.mode === 'online' && !g.result && g.ready) { toast('Antes sal de la partida en línea en la que estás'); return; }
+  if (g && g.mode === 'online') { Online.send({ t: 'salir' }); S.game = null; go(); return; }
+  if (g && !g.result && g.moves.length) {
+    confirmBox('Partida en línea', 'Tienes una partida empezada. Se guardará sin terminar y entrarás en la partida a la que te invitan.', 'Entrar', () => { THINK = null; Engine.reset(); pauseClock(); archiveUpsert(g); S.game = null; go(); });
+    return;
+  }
+  if (g) { THINK = null; Engine.reset(); S.game = null; }
+  go();
+};
+setTimeout(() => { try { Invitacion.listo(); } catch (e) {} }, 0);

@@ -2,7 +2,7 @@
 
 Damas españolas para Android e iPhone: contra la máquina, dos jugadores en el mismo móvil, en línea y problemas de «juegan y ganan».
 App Capacitor + web (`www/`). Todos los datos se guardan en el móvil; solo el juego en línea usa el servidor de juegos (nombre y jugadas, sin guardarlos).
-Paquete: `com.itcanarias.damas` · versión 1.1.0
+Paquete: `com.itcanarias.damas` · versión 1.2.0
 
 **iPhone y navegadores**: la misma app se publica como versión web instalable en https://csuarezsm.github.io/Damas/app/ (GitHub Pages, carpeta `docs/app`, copia de `www/`). En Safari: Compartir → «Añadir a pantalla de inicio». Tras cambiar `www/`, ejecuta `npm run web` antes del commit: las pruebas y el workflow comprueban que `docs/app` está al día. La página de descarga (https://csuarezsm.github.io/Damas/) ofrece Android e iPhone, y el mensaje de «Compartir la app» enlaza a ella.
 
@@ -108,3 +108,10 @@ En una partida en línea, cuando pasa a ser tu turno suena un «ding-dong» cort
 ## Idiomas (español e inglés)
 
 ⋮ → «🌐 Idioma · Language». La primera vez se usa el idioma del móvil (español si empieza por «es»; si no, inglés). La app está escrita en español y `www/idioma.js` traduce lo que se ve con el diccionario `www/i18n-en.js` (los dos, **los mismos archivos en todas las apps**): textos, plantillas con datos ({1}, {2}…), mensajes para compartir, imágenes, fechas y números. Cuando se añade o cambia un texto en español, hay que añadir su traducción al diccionario común (`comun/` en el chat de desarrollo) y copiarlo a todas las apps. Para otro idioma: un `i18n-<código>.js` y su nombre en `IDIOMAS` de `idioma.js`.
+
+## Idiomas, invitaciones y avisos (noviembre 2026)
+
+- **Idiomas**: español, inglés, francés, alemán e italiano (`www/i18n-*.js`, comunes a todas las apps). La primera vez se usa el del móvil.
+- **Invitar con enlace** (`www/invitacion.js`, común): el mensaje lleva `https://csuarezsm.github.io/<repo>/unirse.html?c=CÓDIGO` (`docs/unirse.html`). En Android abre la app en la partida (`itc<juego>://unirse/CÓDIGO`, filtro en `AndroidManifest.xml`) o, si no está instalada, la página de descarga; en iPhone y ordenador abre la versión web ya dentro de la partida (`app/?unirse=CÓDIGO`).
+- **Aviso de turno** (`www/turno.js`, común): sonido y vibración cuando te toca, en línea y contra la máquina. Se quita en ⋮ → Colores… → «🔔 Aviso de turno».
+- **Nombre de la máquina**: al jugar contra la máquina se le puede poner nombre o elegir uno al azar (🎲).

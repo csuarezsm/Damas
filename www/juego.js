@@ -1351,12 +1351,14 @@ function onlineSetupHtml() {
   return `<div class="sec plist"><h2>Tu nombre</h2>
       <input type="text" maxlength="18" id="oName" placeholder="Tú" value="${esc(S.draft.ai.name)}" autocomplete="off" style="width:100%">
       <div class="mut" style="margin-top:6px">Es el nombre que verá tu rival.</div></div>
+    ${Publicas.html(false)}
     <div class="sec"><h2>Unirse a una sala</h2>
       <div class="mut" style="margin-bottom:8px">Escribe el código que te han pasado.</div>
       <div class="row"><input type="text" id="oCode" maxlength="4" placeholder="ABCD" value="${esc(o.code || '')}" autocomplete="off" autocapitalize="characters" style="text-transform:uppercase;letter-spacing:6px;font-weight:800;font-size:calc(22px * var(--fs, 1));text-align:center"><button class="btn-gold" id="oJoin" style="flex:0 0 auto">Entrar</button></div></div>
     <div class="sec"><h2>Crear una sala</h2>
       <div class="kinds" style="margin-top:0">${[['w', Piezas.piece(1, 0) + 'Blancas'], ['b', Piezas.piece(1, 1) + 'Negras'], ['r', '🎲 Al azar']].map(([k, l]) => `<button class="colbtn ${o.color === k ? 'on' : ''}" data-ocolor="${k}">${l}</button>`).join('')}</div>
       <div style="margin-top:12px">${clockFields(o, 'o')}</div>
+      ${Publicas.casilla()}
       <button class="btn-gold" id="oCreate" style="width:100%;margin-top:12px">Crear sala y compartir el código</button></div>
     ${ONLINE.err ? `<div class="gstatus bad">${esc(ONLINE.err)}</div>` : ''}
     <div class="mut" style="padding:4px">Se envían al servidor de juegos de IT Canarias tu nombre y tus jugadas, solo para la partida. La partida queda en tu historial y cuenta para el Elo.</div>`;
@@ -1368,18 +1370,25 @@ function bindOnlineSetup() {
   document.querySelectorAll('[data-oclock]').forEach(b => b.onclick = () => { sync(); o.clock = b.dataset.oclock; render(); });
   document.querySelectorAll('#app input').forEach(el => el.addEventListener('change', sync));
   $('#oCode').oninput = e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); };
-  $('#oCreate').onclick = () => { sync(); ONLINE.err = ''; ONLINE.busy = true; remember(myOnlineName()); Online.send({ t: 'crear', juego: 'damas', nombre: myOnlineName(), opciones: { color: o.color, reloj: parseClock(o.clock, o.cMin, o.cInc) } }); toast('Conectando…'); };
+  $('#oCreate').onclick = () => { sync(); ONLINE.err = ''; ONLINE.busy = true; remember(myOnlineName()); Online.send({ t: 'crear', juego: 'damas', nombre: myOnlineName(), publica: Publicas.marcada(), opciones: { color: o.color, reloj: parseClock(o.clock, o.cMin, o.cInc) } }); toast('Conectando…'); };
   $('#oJoin').onclick = () => { sync(); if (!/^[A-Z0-9]{4}$/.test(o.code)) { toast('El código tiene 4 letras o números'); return; } ONLINE.err = ''; ONLINE.busy = true; remember(myOnlineName()); Online.send({ t: 'unirse', codigo: o.code, nombre: myOnlineName() }); toast('Conectando…'); };
+  Publicas.montar({ juego: 'damas', conMaquina: false,
+    enviar: m => { if (m.t !== 'lista') { sync(); ONLINE.err = ''; ONLINE.busy = true; remember(myOnlineName()); } Online.send(m); },
+    nombre: () => { sync(); return myOnlineName(); },
+    opciones: () => ({ color: o.color, reloj: parseClock(o.clock, o.cMin, o.cInc) }),
+    conectado: () => { if (!ONLINE.conn) Online.connect(); return ONLINE.conn; } });
 }
 function newOnlineGame(s) {
   return { id: 'o' + s.codigo + Date.now().toString(36), created: Date.now(), mode: 'online', room: s.codigo, pid: s.yo, seat: 0, ronda: s.partida ? s.partida.ronda : 0,
     white: '…', black: '…', moves: [], startFen: null, clock: null, result: null, reason: '', undos: 0, hints: 0, ready: false };
 }
 function onMessage(m) {
+  if (m.t === 'lista') return Publicas.recibir(m);
   if (m.t === 'sala') return onSala(m.sala);
   if (m.t === 'fuera') { toast(m.motivo || 'Has salido de la partida'); return onSala(null); }
   if (m.t === 'error') {
     ONLINE.busy = false;
+    if (Publicas.error(m)) return;
     const g = S.game;
     if (g && g.mode === 'online') toast(m.msg); else { ONLINE.err = m.msg; render(); }
   }
@@ -1394,7 +1403,7 @@ function onSala(s) {
     return;
   }
   if (s.juego !== 'damas') return;
-  ONLINE.busy = false; ONLINE.err = '';
+  ONLINE.busy = false; ONLINE.err = ''; ONLINE.sala = s;
   const p = s.partida;
   // sala nueva, o revancha (partida nueva en la misma sala)
   if (!g || g.mode !== 'online' || g.room !== s.codigo || (g.result && p && !p.result && p.ronda !== g.ronda)) {
@@ -1428,7 +1437,7 @@ function onSala(s) {
 }
 function refreshOnline() { const g = S.game; if (g && g.mode === 'online' && !REVIEW && !EDITOR && !S.pz && !S.drill) { const b = document.querySelector('.olbanner'); if (b) { b.outerHTML = onlineBanner(g); bindOnlineGame(g); } } }
 function onlineBanner(g) {
-  if (!g.ready && !g.result) return `<div class="olbanner"><div>Código de la sala</div><b class="olcode">${esc(g.room)}</b><button class="btn-gold" id="olShare">📤 Enviar el código por WhatsApp</button><div class="mut">${ONLINE.conn ? 'La partida empieza sola cuando entre tu rival.' : '📡 Conectando con el servidor…'}</div></div>`;
+  if (!g.ready && !g.result) return `<div class="olbanner"><div>Código de la sala</div><b class="olcode">${esc(g.room)}</b><button class="btn-gold" id="olShare">📤 Enviar el código por WhatsApp</button><div class="mut">${ONLINE.conn ? 'La partida empieza sola cuando entre tu rival.' : '📡 Conectando con el servidor…'}</div>${Publicas.aviso(ONLINE.sala && ONLINE.sala.codigo === g.room ? ONLINE.sala : null)}</div>`;
   let t = '';
   const yoRev = (g.revancha || []).includes(g.pid), otroRev = (g.revancha || []).some(x => x !== g.pid);
   if (!ONLINE.conn && !g.result) t = '📡 Sin conexión con el servidor. Reconectando…';

@@ -195,10 +195,10 @@ function rootScores(pos, depth, opts) {
 const LEVELS = [
   null,
   // Calibrados con partidas entre niveles vecinos (tools/calibrar-niveles.js). El Elo es una estimación para la clasificación.
-  { name: 'Principiante', elo: 600,  depth: 1, noise: 170, blunder: 0.18 },
-  { name: 'Aficionado',   elo: 800,  depth: 2, noise: 90,  blunder: 0.06 },
-  { name: 'Intermedio',   elo: 950,  depth: 3, noise: 50,  blunder: 0.03 },
-  { name: 'Avanzado',     elo: 1150, depth: 5, noise: 30,  blunder: 0.015 },
+  { name: 'Principiante', elo: 600,  depth: 1, noise: 170, blunder: 0.18, maxLoss: 400 },
+  { name: 'Aficionado',   elo: 800,  depth: 2, noise: 90,  blunder: 0.06, maxLoss: 250 },
+  { name: 'Intermedio',   elo: 950,  depth: 3, noise: 50,  blunder: 0.03, maxLoss: 160 },
+  { name: 'Avanzado',     elo: 1150, depth: 5, noise: 30,  blunder: 0.015, maxLoss: 110 },
   { name: 'Experto',      elo: 1450, time: 400, depth: 9, noise: 10 },
   { name: 'Maestro',      elo: 1650, time: 2200 },
 ];
@@ -219,8 +219,11 @@ function levelMove(pos, level, moves, opts) {
     return r;
   }
   if (L.blunder && rnd() < L.blunder) {
-    const pick = legal[Math.floor(rnd() * legal.length)];
-    return { move: pos.uci(pick), score: 0, depth: 0, blunder: true };
+    // despiste humano: una jugada peor de lo debido, pero sin perder más de lo que admite el nivel
+    const sc = rootScores(pos, 2, {});
+    const best = sc.reduce((a, x) => Math.max(a, x.sc), -INF);
+    const cand = sc.filter(x => best - x.sc > 0 && best - x.sc <= L.maxLoss);
+    if (cand.length) { const pick = cand[Math.floor(rnd() * cand.length)]; return { move: pos.uci(pick.m), score: pick.sc, depth: 2, blunder: true }; }
   }
   const sc = rootScores(pos, L.depth, { nodes: opts.nodes });
   let best = null, bv = -Infinity;

@@ -2,7 +2,7 @@
 
 Damas españolas para Android e iPhone: contra la máquina, dos jugadores en el mismo móvil, en línea y problemas de «juegan y ganan».
 App Capacitor + web (`www/`). Todos los datos se guardan en el móvil; solo el juego en línea usa el servidor de juegos (nombre y jugadas, sin guardarlos).
-Paquete: `com.itcanarias.damas` · versión 1.0.2
+Paquete: `com.itcanarias.damas` · versión 1.0.3
 
 **iPhone y navegadores**: la misma app se publica como versión web instalable en https://csuarezsm.github.io/Damas/app/ (GitHub Pages, carpeta `docs/app`, copia de `www/`). En Safari: Compartir → «Añadir a pantalla de inicio». Tras cambiar `www/`, ejecuta `npm run web` antes del commit: las pruebas y el workflow comprueban que `docs/app` está al día. La página de descarga (https://csuarezsm.github.io/Damas/) ofrece Android e iPhone, y el mensaje de «Compartir la app» enlaza a ella.
 
@@ -102,3 +102,5 @@ En el menú ⋮ → «🎲 Más juegos de IT Canarias» y en la página de desca
 ## Aviso de turno en línea
 
 En una partida en línea, cuando pasa a ser tu turno suena un «ding-dong» corto y el móvil vibra (`www/turno.js`, el mismo archivo en todas las apps; sonido sintetizado). Se quita en ⋮ → Colores… → «🔔 Aviso de turno en línea». Suena con la app abierta; con la app en segundo plano el sistema puede pausarla.
+
+**Despistes de la máquina (niveles 1 a 4)**: de vez en cuando la máquina juega a propósito una jugada peor, pero con un límite según el nivel (`maxLoss` en `www/motor.js`): Principiante puede perder bastante, mientras que Avanzado nunca pierde más de algo más de un peón en ese despiste. Nunca juega una jugada al azar que regale una pieza grande sin motivo.

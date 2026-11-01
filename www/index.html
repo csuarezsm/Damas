@@ -308,6 +308,8 @@ pre.pgn{background:var(--bg);border-radius:10px;padding:10px;max-height:28vh;ove
 <script src="problemas.js"></script>
 <script src="juego.js"></script>
 <script>window.APP_ID = 'damas';</script>
+<script src="i18n-en.js"></script>
+<script src="idioma.js"></script>
 <script src="masjuegos.js"></script>
 <script src="turno.js"></script>
 <script src="contador.js"></script>
@@ -371,7 +373,7 @@ function openThemes() {
   AvisoTurno.enlazar();
 }
 
-const APP_VERSION = '1.0.4';
+const APP_VERSION = '1.1.0';
 const REPO = 'csuarezsm/Damas';
 const MAX_ARCHIVE = 500;
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -1064,7 +1066,8 @@ $('#menuBtn').onclick = () => {
     ${S.pz || S.drill || (S.draft.mode === 'puzzles' && !g) ? '' : '<button id="mPz">🧩 Problemas y repaso de errores</button>'}
     ${live || EDITOR ? '' : '<button id="mEditor">✏️ Editor de posiciones</button>'}
     ${isIOS() && !isStandalone() && !isNative() ? '<button id="mIOS" class="btn-gold">📲 Instalar en el iPhone</button>' : ''}
-    <button id="mMas">🎲 Más juegos de IT Canarias</button>
+    <button id="mLang">🌐 Idioma · Language</button>
+      <button id="mMas">🎲 Más juegos de IT Canarias</button>
       <button id="mShareApp">📲 Compartir la app</button>
     <button id="mRoster">👥 Jugadores habituales</button>
     ${isPlay() || !isNative() ? '' : hasUpd() ? `<button id="mUpd" class="btn-gold">🎉 Actualizar a v${esc(S.updAvail.v)} (nueva)</button>` : '<button id="mUpd">🔄 Buscar actualizaciones</button>'}
@@ -1082,6 +1085,7 @@ $('#menuBtn').onclick = () => {
   on('mTheme', openThemes);
   on('mUpd', () => hasUpd() ? openUpdAvail() : checkUpdates(true));
   on('mRoster', openRoster);
+  on('mLang', () => Idioma.elegir());
   on('mMas', () => MasJuegos.abrir());
   on('mShareApp', () => { closeModal(); shareApp(); });
   on('mIOS', () => openIOSInstall(true));

@@ -1412,6 +1412,9 @@ function onSala(s) {
   if (p.moves.join() !== g.moves.join()) { g.moves = p.moves.slice(); VIEW_PLY = null; BS.sel = null; }
   g.clock = p.clock; if (p.times) { g.times = p.times.slice(); g.tick = p.running ? Date.now() : null; }
   g.drawOffer = p.drawOffer;
+  // te toca: aviso con sonido y vibración (una vez por jugada; se quita en ajustes)
+  const clave = p.ronda + ':' + p.moves.length;
+  if (!p.result && turnOf(g) === g.seat && ONLINE.avisado !== clave) { ONLINE.avisado = clave; setTimeout(() => AvisoTurno.sonar(), p.moves.length ? 350 : 0); }
   if (p.result && !g.result) { g.result = p.result; g.reason = p.reason; g.finished = Date.now(); g.tick = null; archiveUpsert(g); setTimeout(() => Sound.play('end'), 200); vibrate([30, 60, 30]); autoBackup(true); }
   save();
   if (!REVIEW && !EDITOR && !S.pz && !S.drill) render();

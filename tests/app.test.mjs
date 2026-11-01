@@ -248,6 +248,9 @@ console.log('Más juegos de IT Canarias');
   await q.goto(URL_APP); await q.waitForTimeout(300);
   const web = await q.evaluate(() => { let u = ''; window.openExternal = x => { u = x; }; MasJuegos.abrir(); document.querySelector('[data-mj="0"]').click(); return u; });
   check('en iPhone el botón abre la versión web del juego', /\/app\/$/.test(web), web);
+  // aviso de turno: se puede quitar en los ajustes
+  const aviso = await q.evaluate(() => { closeModal(); document.querySelector('#menuBtn').click(); document.querySelector('#mTheme').click(); const el = document.querySelector('#thTurno'); const antes = !!el && el.checked; el.click(); const off = S.avisoTurno === false && JSON.parse(localStorage.getItem(KEY)).avisoTurno === false; const n = AvisoTurno.veces; const sono = AvisoTurno.sonar(); return { ok: antes && off && !sono && AvisoTurno.veces === n, antes, off, sono, el: !!el }; });
+  check('el aviso de turno en línea se puede quitar en ajustes', aviso.ok, JSON.stringify(aviso));
   await ci.close();
 }
 
@@ -512,6 +515,8 @@ console.log('Jugar en línea (con el servidor común de juegos)');
     check('no se puede mover en el turno del rival', await b.evaluate(() => S.game.moves.length === 0));
     await move(a, 'f3e4');
     check('la jugada llega al rival', await waitFor(b, () => S.game.moves.join() === 'f3e4'));
+  check('al rival le suena el aviso de que le toca', await waitFor(b, () => AvisoTurno.veces >= 1, null, 5000));
+  check('y a quien acaba de jugar no', await a.evaluate(() => AvisoTurno.veces === 1));   // el suyo fue al empezar con blancas
     check('el reloj del rival corre', await waitFor(b, () => !!S.game.tick && S.game.times[1] <= 300000));
     await move(b, 'c6d5'); await waitFor(a, () => S.game.moves.length === 2);
     await move(a, 'e4c6');

@@ -1,8 +1,8 @@
 // Service worker: deja la versión web disponible sin conexión.
 // En la app Android no hace falta (los archivos ya van dentro del APK) y podría servir
 // una versión antigua tras actualizar, así que allí se da de baja solo.
-const CACHE = 'damas-v1.0.3';
-const ASSETS = ['./', 'index.html', 'damas.js', 'motor.js', 'motor-worker.js', 'piezas.js', 'problemas.js', 'juego.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png', 'masjuegos.js', 'turno.js', 'juegos/ajedrez.png', 'juegos/chinchon.png', 'juegos/pumba.png'];
+const CACHE = 'damas-v1.0.4';
+const ASSETS = ['./', 'index.html', 'damas.js', 'motor.js', 'motor-worker.js', 'piezas.js', 'problemas.js', 'juego.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png', 'masjuegos.js', 'turno.js', 'contador.js', 'juegos/ajedrez.png', 'juegos/chinchon.png', 'juegos/pumba.png'];
 const NATIVE = self.location.hostname === 'localhost' && self.location.protocol === 'https:';
 
 self.addEventListener('install', e => {

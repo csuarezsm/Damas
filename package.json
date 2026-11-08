@@ -1,6 +1,6 @@
 {
   "name": "damas",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "private": true,
   "author": "IT Canarias",
   "license": "UNLICENSED",
@@ -8,7 +8,7 @@
   "scripts": {
     "sync": "npx cap sync android",
     "open": "npx cap open android",
-    "test": "node tests/app.test.mjs",
+    "test": "node tests/app.test.mjs && node tests/idiomas.test.mjs",
     "web": "bash tools/publicar-web.sh",
     "icons": "npx @capacitor/assets generate --android --iconBackgroundColor '#3a141b' --splashBackgroundColor '#22090e'"
   },
